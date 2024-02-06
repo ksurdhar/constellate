@@ -1,28 +1,55 @@
 'use client'
 
+import DailyHabits from '@/components/DailyHabits'
+import { Habit } from '@/types'
 import { format } from 'date-fns'
 import { enGB } from 'date-fns/locale'
 import { useState } from 'react'
 import { DatePickerCalendar } from 'react-nice-dates'
 import 'react-nice-dates/build/style.css'
 
-interface Habit {
-  id: number
-  name: string
-  frequencyPerWeek: number
+interface Entry {
+  completedHabitIds: string[] // display empty checkboxes for every habit, add only if checked
+}
+
+type Entries = { [key: string]: Entry }
+
+// REMOVE ONCE ADDRESSED WITH FORK
+const originalWarn = console.error
+console.error = (...args) => {
+  if (
+    args[0].includes(
+      'Support for defaultProps will be removed from function components in a future major release.'
+    )
+  ) {
+    return
+  }
+  originalWarn(...args)
+}
+
+const normalizeDate = (date: Date) => {
+  return date.toISOString().slice(0, 10)
 }
 
 const Home = () => {
   const [habitName, setHabitName] = useState('')
   const [frequency, setFrequency] = useState('1')
-  const [habits, setHabits] = useState<Habit[]>([])
-  const [nextId, setNextId] = useState(1)
-  const [date, setDate] = useState<Date | null>(null)
+  const [habits, setHabits] = useState<Habit[]>([
+    { id: '1', name: 'Exercise', frequencyPerWeek: 3 },
+    { id: '2', name: 'Read', frequencyPerWeek: 5 },
+    { id: '3', name: 'Meditate', frequencyPerWeek: 7 },
+  ])
+  const [nextId, setNextId] = useState('1')
+  const defaultDate = new Date()
+  const [selectedDate, setSelectedDate] = useState<Date | null>(defaultDate)
+  const [entries, setEntries] = useState<Entries>({
+    [normalizeDate(defaultDate)]: { completedHabitIds: [] },
+  })
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
-    const newHabit = {
+    const newHabit: Habit = {
       id: nextId,
       name: habitName,
       frequencyPerWeek: parseInt(frequency),
@@ -34,30 +61,36 @@ const Home = () => {
     setFrequency('1')
   }
 
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: string) => {
     setHabits(habits.filter((habit) => habit.id !== id))
+  }
+
+  const dailyEntry =
+    selectedDate && entries[normalizeDate(selectedDate)]
+      ? entries[normalizeDate(selectedDate)]
+      : { completedHabitIds: [] }
+
+  const toggleDailyHabit = (habit: Habit) => {
+    if (!selectedDate) return
+
+    if (dailyEntry.completedHabitIds.includes(habit.id)) {
+      dailyEntry.completedHabitIds = dailyEntry.completedHabitIds.filter(
+        (id) => id !== habit.id
+      )
+    } else {
+      dailyEntry.completedHabitIds.push(habit.id)
+    }
+    setEntries({
+      ...entries,
+      [normalizeDate(selectedDate)]: dailyEntry,
+    })
+    console.log(entries)
   }
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen py-5 bg-soft-black text-lg">
       <div className="flex flex-row w-full max-w-4xl px-4">
         <div className="flex-1">
-          <div className="checkbox-wrapper-4">
-            <input className="inp-cbx" id="japanese" type="checkbox" />
-            <label className="cbx" htmlFor="japanese">
-              <span>
-                <svg width="12px" height="10px">
-                  <use xlinkHref="#check-4"></use>
-                </svg>
-              </span>
-              <span>Practice Japanese</span>
-            </label>
-            <svg className="inline-svg">
-              <symbol id="check-4" viewBox="0 0 12 10">
-                <polyline points="1.5 6 4.5 9 10.5 1"></polyline>
-              </symbol>
-            </svg>
-          </div>
           <form onSubmit={handleSubmit} className="flex gap-2 flex-col">
             <div className="flex flex-col">
               <label className="text-slate-400" htmlFor="habitName">
@@ -95,30 +128,40 @@ const Home = () => {
             </div>
             <button type="submit">Add</button>
           </form>
-          <h2>My Habits</h2>
-          <ul>
-            {habits.map(({ id, name, frequencyPerWeek }) => (
-              <li key={id}>
-                {name} - {frequencyPerWeek} times per week
-                <button
-                  onClick={() => handleDelete(id)}
-                  style={{ marginLeft: '10px' }}
-                >
-                  Delete
-                </button>
-              </li>
-            ))}
-          </ul>
+          <div>
+            <h2>My Habits</h2>
+            <ul>
+              {habits.map(({ id, name, frequencyPerWeek }) => (
+                <li key={id}>
+                  {name} - {frequencyPerWeek} times per week
+                  <button
+                    onClick={() => handleDelete(id)}
+                    style={{ marginLeft: '10px' }}
+                  >
+                    Delete
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
         <div className="flex-1 cal">
           <p>
             Selected date:{' '}
-            {date ? format(date, 'dd MMM yyyy', { locale: enGB }) : 'none'}.
+            {selectedDate
+              ? format(selectedDate, 'dd MMM yyyy', { locale: enGB })
+              : 'none'}
+            .
           </p>
           <DatePickerCalendar
-            date={date ? date : new Date()}
-            onDateChange={setDate}
+            date={selectedDate ? selectedDate : defaultDate}
+            onDateChange={(date) => setSelectedDate(date)}
             locale={enGB}
+          />
+          <DailyHabits
+            completedHabitIds={dailyEntry.completedHabitIds}
+            habits={habits}
+            onToggle={toggleDailyHabit}
           />
         </div>
       </div>
