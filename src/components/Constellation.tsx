@@ -25,44 +25,84 @@ const Constellation: React.FC<ConstellationProps> = ({
 }) => {
   const [nodes, setNodes] = useState<Node[]>([])
   const [connections, setConnections] = useState<Connection[]>([])
-
   useEffect(() => {
-    const newNodes: Node[] = Array.from({ length: nodeCount }).map(
-      (_, index) => ({
-        id: index,
-        x: Math.random() * width,
-        y: Math.random() * height,
-      })
-    )
+    const horizontalMargin = width / (nodeCount * 2) // Margin from the edge of the screen
+    const verticalVariance = height * 0.4 // Set the vertical variance
+    const fuzz = 10 // Adjust this value to increase or decrease the fuzziness
+
+    // Manually set the first and last nodes
+    const firstNode: Node = {
+      id: 0,
+      x: horizontalMargin,
+      y: Math.random() * height,
+    }
+    const lastNode: Node = {
+      id: nodeCount - 1,
+      x: width - horizontalMargin,
+      y: Math.random() * height,
+    }
+
+    // Distribute the remaining nodes
+    const newNodes: Node[] = [firstNode]
+
+    for (let i = 1; i < nodeCount - 1; i++) {
+      const prevNode = newNodes[newNodes.length - 1]
+      const newX =
+        prevNode.x +
+        (width - 2 * horizontalMargin) / (nodeCount - 1) +
+        (Math.random() - 0.5) * fuzz
+      const newY =
+        Math.max(
+          verticalVariance,
+          Math.min(
+            height - verticalVariance,
+            prevNode.y + (Math.random() - 0.5) * verticalVariance
+          )
+        ) +
+        (Math.random() - 0.5) * fuzz // Apply fuzz to y
+      newNodes.push({ id: i, x: newX, y: newY })
+    }
+
+    // Add the last node
+    newNodes.push(lastNode)
     setNodes(newNodes)
 
-    // Function to calculate distance between two nodes
-    const distance = (nodeA: Node, nodeB: Node) =>
-      Math.sqrt((nodeA.x - nodeB.x) ** 2 + (nodeA.y - nodeB.y) ** 2)
+    // Primary connections for linear structure
+    const primaryConnections: Connection[] = newNodes
+      .slice(0, -1)
+      .map((node) => ({
+        source: node.id,
+        target: node.id + 1,
+      }))
 
-    // Create connections based on proximity and degree of nodes
-    const newConnections: Connection[] = []
-    newNodes.forEach((node) => {
-      const sortedNodes = newNodes
-        .filter((otherNode) => otherNode.id !== node.id)
-        .sort((a, b) => distance(node, a) - distance(node, b))
+    // Additional connections for hubs and clusters
+    const additionalConnections: Connection[] = []
+    newNodes.forEach((node, index) => {
+      // Skip the first and last nodes
+      if (index === 0 || index === nodeCount - 1) return
 
-      // Connect to the closest node to form a path
-      newConnections.push({ source: node.id, target: sortedNodes[0].id })
-
-      // Randomly decide if we should connect to the second closest node
-      if (Math.random() > 0.5) {
-        newConnections.push({ source: node.id, target: sortedNodes[1].id })
+      // Create a hub by connecting to a non-adjacent node
+      if (Math.random() > 0.7) {
+        const targetIndex = Math.random() > 0.5 ? index - 2 : index + 2
+        if (targetIndex >= 0 && targetIndex < nodeCount) {
+          additionalConnections.push({ source: node.id, target: targetIndex })
+        }
       }
 
-      // Introduce a small chance to connect to a third node, simulating a 'hub'
-      if (Math.random() > 0.8 && sortedNodes.length > 2) {
-        newConnections.push({ source: node.id, target: sortedNodes[2].id })
+      // Connect to one of the nearest nodes above or below to form clusters
+      const isUpperHalf = node.y < height / 2
+      const neighborNode = isUpperHalf
+        ? newNodes[Math.min(index + 1, nodeCount - 1)] // Node above
+        : newNodes[Math.max(index - 1, 0)] // Node below
+      if (neighborNode && Math.random() > 0.3) {
+        additionalConnections.push({ source: node.id, target: neighborNode.id })
       }
     })
 
-    // Remove duplicate connections
-    const uniqueConnections = newConnections.filter(
+    const uniqueConnections = [
+      ...primaryConnections,
+      ...additionalConnections,
+    ].filter(
       (con, index, self) =>
         index ===
         self.findIndex(
@@ -81,7 +121,7 @@ const Constellation: React.FC<ConstellationProps> = ({
           key={node.id}
           cx={node.x}
           cy={node.y}
-          r="5"
+          r="3" // Slightly reduce the node radius
           fill="white"
           style={animationProps}
         />
@@ -89,11 +129,12 @@ const Constellation: React.FC<ConstellationProps> = ({
       {connections.map((connection) => (
         <line
           key={`${connection.source}-${connection.target}`}
-          x1={nodes.find((node) => node.id === connection.source)!.x}
-          y1={nodes.find((node) => node.id === connection.source)!.y}
-          x2={nodes.find((node) => node.id === connection.target)!.x}
-          y2={nodes.find((node) => node.id === connection.target)!.y}
+          x1={nodes[connection.source].x}
+          y1={nodes[connection.source].y}
+          x2={nodes[connection.target].x}
+          y2={nodes[connection.target].y}
           stroke="white"
+          strokeWidth="1" // Make the lines a bit thinner for a more delicate look
           strokeDasharray="5,5"
         />
       ))}
