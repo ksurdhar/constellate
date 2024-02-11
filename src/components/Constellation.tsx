@@ -63,7 +63,13 @@ const Constellation: React.FC<ConstellationProps> = ({
   const [nodes, setNodes] = useState<Node[]>([])
   const [connections, setConnections] = useState<Connection[]>([])
   useEffect(() => {
-    const primaryNodeCount = Math.ceil(nodeCount * 0.65) // 60-70%, adjusted to 65% as a middle ground
+    const maxPrimaryNodes = 14
+    const primaryPercentage = 0.55
+
+    const primaryNodeCount = Math.ceil(
+      Math.min(nodeCount * primaryPercentage, maxPrimaryNodes)
+    )
+
     const margin = width * 0.1 // Equal margin on both sides of the canvas
     const nodeSpacing = (width - 2 * margin) / (primaryNodeCount - 1)
 
@@ -127,6 +133,7 @@ const Constellation: React.FC<ConstellationProps> = ({
     let isBranching = false
     let branchNodeCount = 0
 
+    // branching nodes
     for (let i = primaryNodeCount; i < nodeCount; i++) {
       let branchBaseNode: Node
       let angle: number
@@ -139,7 +146,7 @@ const Constellation: React.FC<ConstellationProps> = ({
         branchNodeCount++ // Increment the count for the current branch
       } else if (
         !isBranching ||
-        (isBranching && branchNodeCount >= 2 && Math.random() < 0.6)
+        (isBranching && branchNodeCount >= 2 && Math.random() < 0.3)
       ) {
         // Either start a new branch or continue branching with a new base node if the current branch has at least two nodes
         isBranching = true // Mark that we are starting or continuing a branch
