@@ -87,8 +87,6 @@ const Constellation: React.FC<ConstellationProps> = ({
       primaryNodes.push({ id: i, x, y })
     }
 
-    setNodes(primaryNodes)
-
     const primaryConnections: Connection[] = primaryNodes
       .slice(0, -1)
       .map((node, index) => ({
@@ -96,7 +94,54 @@ const Constellation: React.FC<ConstellationProps> = ({
         target: node.id + 1,
       }))
 
-    setConnections(primaryConnections)
+    const totalNodesCount =
+      primaryNodeCount + Math.round((nodeCount - primaryNodeCount) * 0.6) // Adjust based on your requirement for secondary nodes
+    let secondaryNodes: Node[] = []
+    let allConnections: Connection[] = [...primaryConnections] // Start with primary connections
+
+    for (let i = primaryNodeCount; i < totalNodesCount; i++) {
+      // Decide whether to start a new branch or continue from an existing one
+      const continueBranch = Math.random() < 0.6 && secondaryNodes.length > 0 // 60% chance to continue a branch if possible
+      let branchBaseNode: Node
+
+      if (continueBranch && secondaryNodes.length > 0) {
+        // Continue from the last secondary node
+        branchBaseNode = secondaryNodes[secondaryNodes.length - 1]
+      } else {
+        // Start a new branch from a random primary node
+        const randomPrimaryNodeIndex = Math.floor(
+          Math.random() * primaryNodeCount
+        )
+        branchBaseNode = primaryNodes[randomPrimaryNodeIndex]
+      }
+
+      const branchDirection = Math.random() < 0.5 ? 1 : -1 // 1 for up, -1 for down
+      const x = continueBranch
+        ? branchBaseNode.x + nodeSpacing
+        : branchBaseNode.x // If continuing a branch, move right; otherwise, use the same x
+      // Determine y based on branch direction and ensure it's within canvas bounds
+      let y =
+        branchBaseNode.y +
+        branchDirection * nodeSpacing * (Math.random() * 0.5 + 0.5) // Adjust the multiplier for variation in branch length
+
+      y = Math.max(0, Math.min(height, y)) // Ensure y stays within canvas bounds
+
+      const newBranchNode: Node = { id: i, x, y }
+      secondaryNodes.push(newBranchNode)
+
+      // Create a connection either back to the branch base node or continue from the previous branch node
+      const connectionSourceId =
+        continueBranch && secondaryNodes.length > 1 ? i - 1 : branchBaseNode.id
+      allConnections.push({
+        source: connectionSourceId,
+        target: newBranchNode.id,
+      })
+    }
+
+    const finalNodes = [...primaryNodes, ...secondaryNodes]
+
+    setNodes(finalNodes)
+    setConnections(allConnections)
   }, [nodeCount, width, height])
 
   const animationProps = useSpring({ opacity: 1, from: { opacity: 0 } })
