@@ -66,7 +66,9 @@ const Constellation: React.FC<ConstellationProps> = ({
     const primaryNodeCount = Math.ceil(nodeCount * 0.65) // 60-70%, adjusted to 65% as a middle ground
     const margin = width * 0.1 // Equal margin on both sides of the canvas
     const nodeSpacing = (width - 2 * margin) / (primaryNodeCount - 1)
-    let previousY = height * 0.2 + Math.random() * height * 0.6 // Initial Y within middle 60% of canvas height
+
+    // Adjusted to start at the center of the canvas's y-axis
+    let previousY = height / 2 // Center y-axis
 
     const primaryNodes: Node[] = []
 
@@ -95,8 +97,6 @@ const Constellation: React.FC<ConstellationProps> = ({
         target: node.id + 1,
       }))
 
-    const totalNodesCount =
-      primaryNodeCount + Math.round((nodeCount - primaryNodeCount) * 0.6)
     let secondaryNodes: Node[] = []
     let allConnections: Connection[] = [...primaryConnections]
 
@@ -195,9 +195,40 @@ const Constellation: React.FC<ConstellationProps> = ({
       }
     }
 
-    const finalNodes = [...primaryNodes, ...secondaryNodes]
+    const allNodes = [...primaryNodes, ...secondaryNodes]
 
-    setNodes(finalNodes)
+    let minX = Infinity,
+      maxX = -Infinity,
+      minY = Infinity,
+      maxY = -Infinity
+
+    allNodes.forEach((node) => {
+      if (node.x < minX) minX = node.x
+      if (node.x > maxX) maxX = node.x
+      if (node.y < minY) minY = node.y
+      if (node.y > maxY) maxY = node.y
+    })
+
+    // Step 2: Calculate the shape's center
+    const shapeCenterX = (minX + maxX) / 2
+    const shapeCenterY = (minY + maxY) / 2
+
+    // Step 3: Calculate the canvas center
+    const canvasCenterX = width / 2
+    const canvasCenterY = height / 2
+
+    // Step 4: Calculate the translation needed
+    const translateX = canvasCenterX - shapeCenterX
+    const translateY = canvasCenterY - shapeCenterY
+
+    // Step 5: Apply the translation to center the shape on the canvas
+    const centeredNodes = allNodes.map((node) => ({
+      id: node.id,
+      x: node.x + translateX,
+      y: node.y + translateY,
+    }))
+
+    setNodes(centeredNodes)
     setConnections(allConnections)
   }, [nodeCount, width, height])
 
