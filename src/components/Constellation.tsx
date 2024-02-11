@@ -61,109 +61,42 @@ const Constellation: React.FC<ConstellationProps> = ({
   const [nodes, setNodes] = useState<Node[]>([])
   const [connections, setConnections] = useState<Connection[]>([])
   useEffect(() => {
-    const horizontalMargin = width / (nodeCount * 2) // Margin from the edge of the screen
-    const verticalVariance = height * 0.4 // Set the vertical variance
-    const fuzz = 20 // Adjust this value to increase or decrease the fuzziness
+    const primaryNodeCount = Math.ceil(nodeCount * 0.65) // 60-70%, adjusted to 65% as a middle ground
+    const margin = width * 0.1 // Equal margin on both sides of the canvas
+    const nodeSpacing = (width - 2 * margin) / (primaryNodeCount - 1)
 
-    // Manually set the first and last nodes
-    const firstNode: Node = {
-      id: 0,
-      x: horizontalMargin,
-      y: Math.random() * height,
-    }
-    const lastNode: Node = {
-      id: nodeCount - 1,
-      x: width - horizontalMargin,
-      y: Math.random() * height,
-    }
+    let previousY = height * 0.2 + Math.random() * height * 0.6 // Initial Y within middle 60% of canvas height
 
-    // Distribute the remaining nodes
-    const newNodes: Node[] = [firstNode]
+    const primaryNodes: Node[] = []
 
-    // Randomly decide which nodes will be "branch" nodes, up to 25% of them
-    const branchNodeIndices = new Set<number>()
-    while (branchNodeIndices.size < nodeCount * 0.25) {
-      const randomIndex = Math.floor(Math.random() * (nodeCount - 2)) + 1 // Avoid first and last nodes
-      branchNodeIndices.add(randomIndex)
-    }
+    for (let i = 0; i < primaryNodeCount; i++) {
+      const x = margin + i * nodeSpacing
+      let y
 
-    for (let i = 1; i < nodeCount - 1; i++) {
-      const baseX =
-        horizontalMargin +
-        (width - 2 * horizontalMargin) * (i / (nodeCount - 1))
-      const newX = baseX + (Math.random() - 0.5) * fuzz
-      const newY =
-        Math.max(
-          verticalVariance,
-          Math.min(
-            height - verticalVariance,
-            height / 2 + (Math.random() - 0.5) * verticalVariance
-          )
-        ) +
-        (Math.random() - 0.5) * fuzz // Apply fuzz to y
-      newNodes.push({ id: i, x: newX, y: newY })
+      if (i === 0) {
+        y = previousY // Use the initially calculated Y for the first node
+      } else {
+        // For subsequent nodes, calculate Y based on the previous node's Y and a random angle within 70 degrees
+        const angleDelta = (Math.random() - 0.5) * 70 // Random angle change within 70 degrees
+        // Convert angleDelta to radians and calculate Y change
+        const deltaY = Math.tan((angleDelta * Math.PI) / 180) * nodeSpacing
+        y = Math.max(0, Math.min(height, previousY + deltaY)) // Ensure y stays within canvas bounds
+        previousY = y // Update previousY for the next node
+      }
+
+      primaryNodes.push({ id: i, x, y })
     }
 
-    // Add the last node
-    newNodes.push(lastNode)
-    setNodes(newNodes)
+    setNodes(primaryNodes)
 
-    // Primary connections for linear structure
-    const primaryConnections: Connection[] = newNodes
+    const primaryConnections: Connection[] = primaryNodes
       .slice(0, -1)
-      .map((node) => ({
+      .map((node, index) => ({
         source: node.id,
         target: node.id + 1,
       }))
 
-    // Function to calculate the angle between two lines
-    const angleBetweenLines = (line1: Connection, line2: Connection) => {
-      const dx1 = newNodes[line1.target].x - newNodes[line1.source].x
-      const dy1 = newNodes[line1.target].y - newNodes[line1.source].y
-      const dx2 = newNodes[line2.target].x - newNodes[line2.source].x
-      const dy2 = newNodes[line2.target].y - newNodes[line2.source].y
-      const angle1 = Math.atan2(dy1, dx1)
-      const angle2 = Math.atan2(dy2, dx2)
-      const diff = Math.abs(angle1 - angle2)
-      return Math.min(diff, 2 * Math.PI - diff)
-    }
-
-    // Additional connections for branches with angle constraint
-    const additionalConnections: Connection[] = []
-    newNodes.forEach((node, index) => {
-      // Create branches for selected nodes
-      if (branchNodeIndices.has(index)) {
-        const branchLength = 1 + Math.floor(Math.random() * 4)
-        // Choose a direction for the branch: up or down
-        const branchDirection = Math.random() < 0.5 ? -1 : 1
-        const branchTargetIndex = index + branchDirection * branchLength
-        if (branchTargetIndex > 0 && branchTargetIndex < nodeCount - 1) {
-          const newConnection = {
-            source: node.id,
-            target: newNodes[branchTargetIndex].id,
-          }
-          const angles = primaryConnections.map((pc) =>
-            angleBetweenLines(pc, newConnection)
-          )
-          // Check if the new connection forms an angle less than 120 degrees with all primary connections
-          if (angles.every((angle) => angle <= (120 * Math.PI) / 180)) {
-            additionalConnections.push(newConnection)
-          }
-        }
-      }
-    })
-
-    const uniqueConnections = [
-      ...primaryConnections,
-      ...additionalConnections,
-    ].filter(
-      (con, index, self) =>
-        index ===
-        self.findIndex(
-          (t) => t.source === con.source && t.target === con.target
-        )
-    )
-    setConnections(uniqueConnections)
+    setConnections(primaryConnections)
   }, [nodeCount, width, height])
 
   const animationProps = useSpring({ opacity: 1, from: { opacity: 0 } })
