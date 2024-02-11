@@ -5,6 +5,7 @@ interface Node {
   id: number
   x: number
   y: number
+  direction?: number
 }
 
 interface Connection {
@@ -64,7 +65,6 @@ const Constellation: React.FC<ConstellationProps> = ({
     const primaryNodeCount = Math.ceil(nodeCount * 0.65) // 60-70%, adjusted to 65% as a middle ground
     const margin = width * 0.1 // Equal margin on both sides of the canvas
     const nodeSpacing = (width - 2 * margin) / (primaryNodeCount - 1)
-
     let previousY = height * 0.2 + Math.random() * height * 0.6 // Initial Y within middle 60% of canvas height
 
     const primaryNodes: Node[] = []
@@ -95,41 +95,72 @@ const Constellation: React.FC<ConstellationProps> = ({
       }))
 
     const totalNodesCount =
-      primaryNodeCount + Math.round((nodeCount - primaryNodeCount) * 0.6) // Adjust based on your requirement for secondary nodes
+      primaryNodeCount + Math.round((nodeCount - primaryNodeCount) * 0.6)
     let secondaryNodes: Node[] = []
-    let allConnections: Connection[] = [...primaryConnections] // Start with primary connections
+    let allConnections: Connection[] = [...primaryConnections]
+
+    // Helper function to calculate a new point given a starting point, distance, and angle
+    function calculateNewPoint(
+      x: number,
+      y: number,
+      angle: number,
+      distance: number
+    ): { x: number; y: number } {
+      return {
+        x: x + Math.cos(angle) * distance,
+        y: y + Math.sin(angle) * distance,
+      }
+    }
+    function calculateBranchingAngle(direction: number): number {
+      const baseAngle = direction > 0 ? Math.PI / 2 : (3 * Math.PI) / 2 // π/2 for up, 3π/2 for down
+      // Random angle within 45 degrees of the base angle
+      const angleVariance = ((Math.random() - 0.5) * Math.PI) / 2 // ±45 degrees in radians
+      return baseAngle + angleVariance
+    }
+    function adjustContinuingBranchAngle(previousAngle: number): number {
+      // Calculate a new angle by adjusting the previous angle within ±45 degrees (π/4 radians)
+      const angleAdjustment = ((Math.random() - 0.5) * Math.PI) / 2 // Random adjustment within ±45 degrees
+      return previousAngle + angleAdjustment
+    }
 
     for (let i = primaryNodeCount; i < totalNodesCount; i++) {
-      // Decide whether to start a new branch or continue from an existing one
-      const continueBranch = Math.random() < 0.6 && secondaryNodes.length > 0 // 60% chance to continue a branch if possible
+      const continueBranch = Math.random() < 0.6 && secondaryNodes.length > 0
       let branchBaseNode: Node
+      let angle: number
 
-      if (continueBranch && secondaryNodes.length > 0) {
-        // Continue from the last secondary node
-        branchBaseNode = secondaryNodes[secondaryNodes.length - 1]
+      if (continueBranch) {
+        // Continue from the last secondary node, maintaining the branch direction
+        const lastSecondaryNode = secondaryNodes[secondaryNodes.length - 1]
+        branchBaseNode = lastSecondaryNode
+        angle = adjustContinuingBranchAngle(lastSecondaryNode.direction!)
       } else {
         // Start a new branch from a random primary node
         const randomPrimaryNodeIndex = Math.floor(
           Math.random() * primaryNodeCount
         )
         branchBaseNode = primaryNodes[randomPrimaryNodeIndex]
+        const direction = Math.random() < 0.5 ? 1 : -1
+        angle = calculateBranchingAngle(direction)
+        branchBaseNode.direction = angle
       }
 
-      const branchDirection = Math.random() < 0.5 ? 1 : -1 // 1 for up, -1 for down
-      const x = continueBranch
-        ? branchBaseNode.x + nodeSpacing
-        : branchBaseNode.x // If continuing a branch, move right; otherwise, use the same x
-      // Determine y based on branch direction and ensure it's within canvas bounds
-      let y =
-        branchBaseNode.y +
-        branchDirection * nodeSpacing * (Math.random() * 0.5 + 0.5) // Adjust the multiplier for variation in branch length
+      const { x, y } = calculateNewPoint(
+        branchBaseNode.x,
+        branchBaseNode.y,
+        angle,
+        nodeSpacing
+      )
 
-      y = Math.max(0, Math.min(height, y)) // Ensure y stays within canvas bounds
+      const newY = Math.max(0, Math.min(height, y))
 
-      const newBranchNode: Node = { id: i, x, y }
+      const newBranchNode: Node = {
+        id: i,
+        x,
+        y: newY,
+        direction: angle,
+      }
       secondaryNodes.push(newBranchNode)
 
-      // Create a connection either back to the branch base node or continue from the previous branch node
       const connectionSourceId =
         continueBranch && secondaryNodes.length > 1 ? i - 1 : branchBaseNode.id
       allConnections.push({
