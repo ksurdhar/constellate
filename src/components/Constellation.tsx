@@ -125,7 +125,7 @@ const Constellation: React.FC<ConstellationProps> = ({
       Math.min(nodeCount * primaryPercentage, maxPrimaryNodes)
     )
 
-    const margin = width * 0.1 // Equal margin on both sides of the canvas
+    const margin = width * 0.1 // Equal margin
     const nodeSpacing = (width - 2 * margin) / (primaryNodeCount - 1)
     let previousY = height / 2 // Center y-axis
 
@@ -136,14 +136,14 @@ const Constellation: React.FC<ConstellationProps> = ({
       let y
 
       if (i === 0) {
-        y = previousY // Use the initially calculated Y for the first node
+        y = previousY // first node
       } else {
-        // For subsequent nodes, calculate Y based on the previous node's Y and a random angle within 70 degrees
-        const angleDelta = (Math.random() - 0.5) * 70 // Random angle change within 70 degrees
+        // For others calc Y based on prev node's Y and random angle within 70 degrees
+        const angleDelta = (Math.random() - 0.5) * 70
         // Convert angleDelta to radians and calculate Y change
         const deltaY = Math.tan((angleDelta * Math.PI) / 180) * nodeSpacing
-        y = Math.max(0, Math.min(height, previousY + deltaY)) // Ensure y stays within canvas bounds
-        previousY = y // Update previousY for the next node
+        y = Math.max(0, Math.min(height, previousY + deltaY)) // Ensure stays within canvas bounds
+        previousY = y
       }
 
       primaryNodes.push({ id: i, x, y })
@@ -160,32 +160,21 @@ const Constellation: React.FC<ConstellationProps> = ({
     let allConnections: Connection[] = [...primaryConnections]
 
     let isBranching = false
-    let branchNodeCount = 0
+    let branchLength = 0
 
     // Add branching nodes
     for (let i = primaryNodeCount; i < nodeCount; i++) {
       let branchBaseNode: Node
       let angle: number
 
-      if (isBranching && branchNodeCount < 2) {
-        // Continue the branch if it doesn't have at least two nodes
-        const lastSecondaryNode = secondaryNodes[secondaryNodes.length - 1]
-        branchBaseNode = lastSecondaryNode
-        angle = adjustContinuingBranchAngle(lastSecondaryNode.direction!)
-        branchNodeCount++ // Increment the count for the current branch
-      } else if (
-        !isBranching ||
-        (isBranching && branchNodeCount >= 2 && Math.random() < 0.3)
-      ) {
-        // Either start a new branch or continue branching with a new base node if the current branch has at least two nodes
-        isBranching = true // Mark that we are starting or continuing a branch
-        branchNodeCount = 1 // Reset or start the count for a new branch
+      if (!isBranching) {
+        // start a new branch
+        isBranching = true
+        branchLength = 1
 
         do {
-          const randomPrimaryNodeIndex = Math.floor(
-            Math.random() * primaryNodeCount
-          )
-          branchBaseNode = primaryNodes[randomPrimaryNodeIndex]
+          const randomPrimaryIdx = Math.floor(Math.random() * primaryNodeCount)
+          branchBaseNode = primaryNodes[randomPrimaryIdx]
         } while (branchBaseNode.branches === true)
 
         const direction = Math.random() < 0.5 ? 1 : -1
@@ -193,11 +182,11 @@ const Constellation: React.FC<ConstellationProps> = ({
         branchBaseNode.direction = angle
         branchBaseNode.branches = true
       } else {
-        // Continue adding to the current branch without changing the base node
+        // continue adding to existing branch
         const lastSecondaryNode = secondaryNodes[secondaryNodes.length - 1]
         branchBaseNode = lastSecondaryNode
         angle = adjustContinuingBranchAngle(lastSecondaryNode.direction!)
-        branchNodeCount++
+        branchLength++
       }
 
       const { x, y } = calculateNewPoint(
@@ -217,7 +206,7 @@ const Constellation: React.FC<ConstellationProps> = ({
       secondaryNodes.push(newBranchNode)
 
       const connectionSourceId =
-        branchNodeCount === 1
+        branchLength === 1
           ? branchBaseNode.id
           : secondaryNodes[secondaryNodes.length - 2].id
       allConnections.push({
@@ -226,13 +215,14 @@ const Constellation: React.FC<ConstellationProps> = ({
       })
 
       // Check if we should end the current branch
-      // could adjust this 0.3 value as the number of nodes gets bigger to get smaller
-      if (branchNodeCount >= 2 && Math.random() < 0.3) {
-        isBranching = false // End the current branch
+      if (branchLength >= 2 && Math.random() < 0.5) {
+        isBranching = false
       }
     }
 
     const allNodes = [...primaryNodes, ...secondaryNodes]
+
+    // form additional connections
 
     const centeredNodes = centerNodesOnCanvas(allNodes, width, height)
 
