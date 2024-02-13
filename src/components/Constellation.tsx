@@ -14,12 +14,6 @@ interface Connection {
   target: number
 }
 
-interface ConstellationProps {
-  nodeCount: number
-  width: number
-  height: number
-}
-
 interface AnimatedLineProps {
   x1: number
   y1: number
@@ -55,6 +49,67 @@ const AnimatedLine = ({ x1, y1, x2, y2 }: AnimatedLineProps) => {
   )
 }
 
+function centerNodesOnCanvas(
+  nodes: Node[],
+  width: number,
+  height: number
+): Node[] {
+  let minX = Infinity,
+    maxX = -Infinity,
+    minY = Infinity,
+    maxY = -Infinity
+
+  nodes.forEach((node) => {
+    minX = Math.min(minX, node.x)
+    maxX = Math.max(maxX, node.x)
+    minY = Math.min(minY, node.y)
+    maxY = Math.max(maxY, node.y)
+  })
+
+  const shapeCenterX = (minX + maxX) / 2
+  const shapeCenterY = (minY + maxY) / 2
+  const canvasCenterX = width / 2
+  const canvasCenterY = height / 2
+  const translateX = canvasCenterX - shapeCenterX
+  const translateY = canvasCenterY - shapeCenterY
+
+  return nodes.map((node) => ({
+    ...node,
+    x: node.x + translateX,
+    y: node.y + translateY,
+  }))
+}
+
+// Helper function to calculate a new point given a starting point, distance, and angle
+function calculateNewPoint(
+  x: number,
+  y: number,
+  angle: number,
+  distance: number
+): { x: number; y: number } {
+  return {
+    x: x + Math.cos(angle) * distance,
+    y: y + Math.sin(angle) * distance,
+  }
+}
+function calculateBranchingAngle(direction: number): number {
+  const baseAngle = direction > 0 ? Math.PI / 2 : (3 * Math.PI) / 2 // π/2 for up, 3π/2 for down
+  // Random angle within 45 degrees of the base angle
+  const angleVariance = ((Math.random() - 0.5) * Math.PI) / 2 // ±45 degrees in radians
+  return baseAngle + angleVariance
+}
+function adjustContinuingBranchAngle(previousAngle: number): number {
+  // Calculate a new angle by adjusting the previous angle within ±45 degrees (π/4 radians)
+  const angleAdjustment = ((Math.random() - 0.5) * Math.PI) / 2 // Random adjustment within ±45 degrees
+  return previousAngle + angleAdjustment
+}
+
+interface ConstellationProps {
+  nodeCount: number
+  width: number
+  height: number
+}
+
 const Constellation: React.FC<ConstellationProps> = ({
   nodeCount,
   width,
@@ -72,8 +127,6 @@ const Constellation: React.FC<ConstellationProps> = ({
 
     const margin = width * 0.1 // Equal margin on both sides of the canvas
     const nodeSpacing = (width - 2 * margin) / (primaryNodeCount - 1)
-
-    // Adjusted to start at the center of the canvas's y-axis
     let previousY = height / 2 // Center y-axis
 
     const primaryNodes: Node[] = []
@@ -98,7 +151,7 @@ const Constellation: React.FC<ConstellationProps> = ({
 
     const primaryConnections: Connection[] = primaryNodes
       .slice(0, -1)
-      .map((node, index) => ({
+      .map((node) => ({
         source: node.id,
         target: node.id + 1,
       }))
@@ -106,34 +159,10 @@ const Constellation: React.FC<ConstellationProps> = ({
     let secondaryNodes: Node[] = []
     let allConnections: Connection[] = [...primaryConnections]
 
-    // Helper function to calculate a new point given a starting point, distance, and angle
-    function calculateNewPoint(
-      x: number,
-      y: number,
-      angle: number,
-      distance: number
-    ): { x: number; y: number } {
-      return {
-        x: x + Math.cos(angle) * distance,
-        y: y + Math.sin(angle) * distance,
-      }
-    }
-    function calculateBranchingAngle(direction: number): number {
-      const baseAngle = direction > 0 ? Math.PI / 2 : (3 * Math.PI) / 2 // π/2 for up, 3π/2 for down
-      // Random angle within 45 degrees of the base angle
-      const angleVariance = ((Math.random() - 0.5) * Math.PI) / 2 // ±45 degrees in radians
-      return baseAngle + angleVariance
-    }
-    function adjustContinuingBranchAngle(previousAngle: number): number {
-      // Calculate a new angle by adjusting the previous angle within ±45 degrees (π/4 radians)
-      const angleAdjustment = ((Math.random() - 0.5) * Math.PI) / 2 // Random adjustment within ±45 degrees
-      return previousAngle + angleAdjustment
-    }
-
     let isBranching = false
     let branchNodeCount = 0
 
-    // branching nodes
+    // Add branching nodes
     for (let i = primaryNodeCount; i < nodeCount; i++) {
       let branchBaseNode: Node
       let angle: number
@@ -168,7 +197,7 @@ const Constellation: React.FC<ConstellationProps> = ({
         const lastSecondaryNode = secondaryNodes[secondaryNodes.length - 1]
         branchBaseNode = lastSecondaryNode
         angle = adjustContinuingBranchAngle(lastSecondaryNode.direction!)
-        branchNodeCount++ // Continue to increment the count for the current branch
+        branchNodeCount++
       }
 
       const { x, y } = calculateNewPoint(
@@ -197,43 +226,15 @@ const Constellation: React.FC<ConstellationProps> = ({
       })
 
       // Check if we should end the current branch
-      if (branchNodeCount >= 2 && Math.random() < 0.4) {
+      // could adjust this 0.3 value as the number of nodes gets bigger to get smaller
+      if (branchNodeCount >= 2 && Math.random() < 0.3) {
         isBranching = false // End the current branch
       }
     }
 
     const allNodes = [...primaryNodes, ...secondaryNodes]
 
-    let minX = Infinity,
-      maxX = -Infinity,
-      minY = Infinity,
-      maxY = -Infinity
-
-    allNodes.forEach((node) => {
-      if (node.x < minX) minX = node.x
-      if (node.x > maxX) maxX = node.x
-      if (node.y < minY) minY = node.y
-      if (node.y > maxY) maxY = node.y
-    })
-
-    // Step 2: Calculate the shape's center
-    const shapeCenterX = (minX + maxX) / 2
-    const shapeCenterY = (minY + maxY) / 2
-
-    // Step 3: Calculate the canvas center
-    const canvasCenterX = width / 2
-    const canvasCenterY = height / 2
-
-    // Step 4: Calculate the translation needed
-    const translateX = canvasCenterX - shapeCenterX
-    const translateY = canvasCenterY - shapeCenterY
-
-    // Step 5: Apply the translation to center the shape on the canvas
-    const centeredNodes = allNodes.map((node) => ({
-      id: node.id,
-      x: node.x + translateX,
-      y: node.y + translateY,
-    }))
+    const centeredNodes = centerNodesOnCanvas(allNodes, width, height)
 
     setNodes(centeredNodes)
     setConnections(allConnections)
