@@ -1,6 +1,6 @@
 'use client'
 
-import Constellation from '@/components/Constellation'
+import Constellation from '@/components/Constellation/Constellation'
 import { Habit } from '@/types'
 import { useState } from 'react'
 import 'react-nice-dates/build/style.css'

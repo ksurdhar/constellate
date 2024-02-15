@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { animated, config, useSpring } from 'react-spring'
+import AnimatedLine from './AnimatedLine'
+import StarNode from './StarNode'
 
 interface Node {
   id: number
@@ -12,54 +13,6 @@ interface Node {
 interface Connection {
   source: number
   target: number
-}
-
-interface AnimatedLineProps {
-  x1: number
-  y1: number
-  x2: number
-  y2: number
-}
-
-const AnimatedLine = ({ x1, y1, x2, y2 }: AnimatedLineProps) => {
-  const length = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
-
-  const dashLength = 5
-  const gapLength = 5
-  const totalDashLength = dashLength + gapLength
-
-  // Calcu how many times the dash pattern will repeat over the line length
-  // ensures a smooth looping animation
-
-  const dashRepeat = Math.ceil(length / totalDashLength)
-  const initialStrokeDashoffset = dashRepeat * totalDashLength
-  const strokeDasharray = `${dashLength}, ${gapLength}`
-
-  const animatedProps = useSpring({
-    from: { strokeDashoffset: initialStrokeDashoffset },
-    to: { strokeDashoffset: 0 },
-    config: { duration: 8000 },
-    reset: true,
-    onRest: () => {
-      animatedProps.strokeDashoffset.start({
-        from: initialStrokeDashoffset,
-        to: 0,
-      })
-    },
-  })
-
-  return (
-    <animated.line
-      x1={x1}
-      y1={y1}
-      x2={x2}
-      y2={y2}
-      stroke="white"
-      strokeWidth="1"
-      strokeDasharray={strokeDasharray}
-      style={animatedProps}
-    />
-  )
 }
 
 function centerNodesOnCanvas(
@@ -121,93 +74,6 @@ interface ConstellationProps {
   nodeCount: number
   width: number
   height: number
-}
-
-interface HaloProps {
-  cx: number
-  cy: number
-  color: string
-  showHalo: boolean
-}
-
-const Halo: React.FC<HaloProps> = ({ cx, cy, color, showHalo }) => {
-  const [props, set] = useSpring(() => ({
-    r: 3,
-    opacity: 1,
-    config: config.gentle,
-    onRest: () => {
-      if (showHalo) {
-        set({ opacity: 0, immediate: true })
-        set({ r: 3, opacity: 1, immediate: false })
-      }
-    },
-  }))
-
-  useEffect(() => {
-    if (showHalo) {
-      set({ r: 10, opacity: 0 })
-    } else {
-      set({ r: 3, opacity: 1, immediate: true })
-    }
-  }, [showHalo, set])
-
-  return (
-    <animated.circle
-      cx={cx}
-      cy={cy}
-      r={props.r}
-      fill="none"
-      stroke={color}
-      strokeWidth="2"
-      style={{
-        opacity: props.opacity,
-      }}
-    />
-  )
-}
-
-interface StarNodeProps {
-  cx: number
-  cy: number
-  color: string
-  isActive?: boolean
-}
-
-const StarNode: React.FC<StarNodeProps> = ({
-  cx,
-  cy,
-  color,
-  isActive = true,
-}) => {
-  const [showHalo, setShowHalo] = useState(false)
-
-  useEffect(() => {
-    let interval: number
-    if (isActive) {
-      interval = window.setInterval(() => {
-        setShowHalo(true)
-        setTimeout(() => setShowHalo(false), 1000)
-      }, 4000)
-    }
-
-    return () => {
-      if (interval) clearInterval(interval)
-    }
-  }, [isActive])
-
-  return (
-    <>
-      {showHalo && <Halo cx={cx} cy={cy} color={color} showHalo={showHalo} />}
-      <animated.circle
-        cx={cx}
-        cy={cy}
-        r="3"
-        fill={isActive ? color : 'black'}
-        stroke={isActive ? color : 'white'}
-        strokeWidth="1"
-      />
-    </>
-  )
 }
 
 const Constellation: React.FC<ConstellationProps> = ({
@@ -335,9 +201,10 @@ const Constellation: React.FC<ConstellationProps> = ({
           )
           const targetNode = eligiblePrimaryNodes[randomTargetIdx]
 
+          // source and target get swapped
           allConnections.push({
-            source: newBranchNode.id,
-            target: targetNode.id,
+            target: newBranchNode.id,
+            source: targetNode.id,
           })
         }
       }
