@@ -22,16 +22,29 @@ interface AnimatedLineProps {
 }
 
 const AnimatedLine = ({ x1, y1, x2, y2 }: AnimatedLineProps) => {
-  // Calculate the length of the line
   const length = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
 
+  const dashLength = 5
+  const gapLength = 5
+  const totalDashLength = dashLength + gapLength
+
+  // Calcu how many times the dash pattern will repeat over the line length
+  // ensures a smooth looping animation
+
+  const dashRepeat = Math.ceil(length / totalDashLength)
+  const initialStrokeDashoffset = dashRepeat * totalDashLength
+  const strokeDasharray = `${dashLength}, ${gapLength}`
+
   const animatedProps = useSpring({
-    from: { strokeDashoffset: 0 },
-    to: { strokeDashoffset: -length },
+    from: { strokeDashoffset: initialStrokeDashoffset },
+    to: { strokeDashoffset: 0 },
     config: { duration: 8000 },
     reset: true,
     onRest: () => {
-      animatedProps.strokeDashoffset.start({ from: 0, to: -length })
+      animatedProps.strokeDashoffset.start({
+        from: initialStrokeDashoffset,
+        to: 0,
+      })
     },
   })
 
@@ -43,7 +56,7 @@ const AnimatedLine = ({ x1, y1, x2, y2 }: AnimatedLineProps) => {
       y2={y2}
       stroke="white"
       strokeWidth="1"
-      strokeDasharray={`5, 5`}
+      strokeDasharray={strokeDasharray}
       style={animatedProps}
     />
   )
@@ -214,6 +227,34 @@ const Constellation: React.FC<ConstellationProps> = ({
         target: newBranchNode.id,
       })
 
+      // chance to form additional connection
+      if (Math.random() < 0.25) {
+        const branchBaseNodeIndex = primaryNodes.findIndex(
+          (node) => node.id === branchBaseNode.id
+        )
+
+        const eligiblePrimaryNodes = primaryNodes.filter((_, idx) => {
+          if (idx === branchBaseNodeIndex) return false // Exclude the current base node itself
+
+          const minIndex = Math.max(0, branchBaseNodeIndex - branchLength - 1)
+          const maxIndex = branchBaseNodeIndex - 1 // ensure we're looking back from the current base node
+
+          return idx >= minIndex && idx <= maxIndex
+        })
+
+        if (eligiblePrimaryNodes.length > 0) {
+          const randomTargetIdx = Math.floor(
+            Math.random() * eligiblePrimaryNodes.length
+          )
+          const targetNode = eligiblePrimaryNodes[randomTargetIdx]
+
+          allConnections.push({
+            source: newBranchNode.id,
+            target: targetNode.id,
+          })
+        }
+      }
+
       // Check if we should end the current branch
       if (branchLength >= 2 && Math.random() < 0.5) {
         isBranching = false
@@ -221,8 +262,6 @@ const Constellation: React.FC<ConstellationProps> = ({
     }
 
     const allNodes = [...primaryNodes, ...secondaryNodes]
-
-    // form additional connections
 
     const centeredNodes = centerNodesOnCanvas(allNodes, width, height)
 
