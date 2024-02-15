@@ -225,7 +225,7 @@ const Constellation: React.FC<ConstellationProps> = ({
 
   return (
     <svg style={{ width, height, backgroundColor: 'black' }}>
-      {connections.map((connection) => {
+      {connections.map((connection, idx) => {
         const sourceNode = nodes.find((n) => n.id === connection.source)
         const targetNode = nodes.find((n) => n.id === connection.target)
 
@@ -239,6 +239,7 @@ const Constellation: React.FC<ConstellationProps> = ({
             y1={sourceNode.y}
             x2={targetNode.x}
             y2={targetNode.y}
+            isActive={idx < 3}
           />
         )
       })}
