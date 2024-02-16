@@ -60,16 +60,19 @@ const StarNode: React.FC<StarNodeProps> = ({
   const [showHalo, setShowHalo] = useState(false)
 
   useEffect(() => {
-    let interval: number
-    if (isActive) {
-      interval = window.setInterval(() => {
-        setShowHalo(true)
-        setTimeout(() => setShowHalo(false), 1000)
-      }, 4000)
+    const toggleHalo = () => {
+      setShowHalo(true)
+      setTimeout(() => setShowHalo(false), 1000)
     }
 
-    return () => {
-      if (interval) clearInterval(interval)
+    if (isActive) {
+      toggleHalo()
+
+      const interval = window.setInterval(() => {
+        toggleHalo()
+      }, 4000)
+
+      return () => clearInterval(interval)
     }
   }, [isActive])
 

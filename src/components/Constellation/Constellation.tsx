@@ -42,23 +42,21 @@ const Constellation: React.FC<ConstellationProps> = ({
         if (!sourceNode || !targetNode) return null
 
         return (
-          <>
+          <React.Fragment key={`${connection.source}-${connection.target}`}>
             <InactiveLine
-              key={`${connection.source}-${connection.target}`}
               x1={sourceNode.x}
               y1={sourceNode.y}
               x2={targetNode.x}
               y2={targetNode.y}
             />
             <ActiveLine
-              key={`${connection.source}-${connection.target}`}
               x1={sourceNode.x}
               y1={sourceNode.y}
               x2={targetNode.x}
               y2={targetNode.y}
               isActive={idx <= activeConnectionIndex}
             />
-          </>
+          </React.Fragment>
         )
       })}
       {nodes.map((node, idx) => (

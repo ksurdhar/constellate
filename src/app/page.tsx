@@ -90,7 +90,7 @@ const Home = () => {
   //
 
   return (
-    <Constellation nodeCount={15} width={600} height={450} />
+    <Constellation nodeCount={10} width={600} height={450} />
     // <div className="flex flex-col items-center justify-center min-h-screen py-5 bg-soft-black text-lg">
     //   <div className="flex flex-row w-full max-w-4xl px-4">
     //     <div className="flex-1">
