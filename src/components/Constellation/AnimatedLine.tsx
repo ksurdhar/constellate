@@ -38,7 +38,7 @@ const AnimatedLine: React.FC<AnimatedLineProps> = ({
   })
 
   const activeAnimatedProps = useSpring({
-    from: { opacity: 0.4 },
+    from: { opacity: 0.35 },
     to: { opacity: 1 },
     config: { duration: 2000 },
     loop: { reverse: true },
