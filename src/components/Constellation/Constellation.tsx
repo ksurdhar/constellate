@@ -1,5 +1,4 @@
 import useConstellation from '@/hooks/UseConstellation'
-import { Connection, Node } from '@/types'
 import React, { useEffect, useState } from 'react'
 import AnimatedLine from './AnimatedLine'
 import StarNode from './StarNode'
@@ -17,61 +16,20 @@ const Constellation: React.FC<ConstellationProps> = ({
 }) => {
   const { nodes, connections } = useConstellation(nodeCount, width, height)
 
-  const [activeNodeIds, setActiveNodeIds] = useState<Set<number>>(new Set())
-  const [activeLineIds, setActiveLineIds] = useState<Set<string>>(new Set())
+  const [activeNodeIndex, setActiveNodeIndex] = useState(0)
+  const [activeConnectionIndex, setActiveConnectionIndex] = useState(-1) // Start from -1 since we activate nodes first
 
   useEffect(() => {
     const interval = setInterval(() => {
-      // Determine the next node and line to activate
-      let nextNode: Node | undefined
-      let nextLine: Connection | undefined
-
-      if (activeNodeIds.size === 0) {
-        // Activate the first primary node initially
-        nextNode = nodes.find((node) => !node.branches)
-      } else {
-        // Find the last activated node
-        const lastActiveNodeId = Array.from(activeNodeIds).pop()
-        const lastActiveNode = nodes.find(
-          (node) => node.id === lastActiveNodeId
-        )
-
-        // Determine the next node to activate: look for connected nodes in the order of connections
-        for (const connection of connections) {
-          const isSourceActive = activeNodeIds.has(connection.source)
-          const isTargetActive = activeNodeIds.has(connection.target)
-          if (isSourceActive && !isTargetActive) {
-            nextNode = nodes.find((node) => node.id === connection.target)
-            nextLine = connection
-            break
-          } else if (!isSourceActive && isTargetActive) {
-            nextNode = nodes.find((node) => node.id === connection.source)
-            nextLine = connection
-            break
-          }
-        }
-
-        // If no next node found in connections (end of branch), activate the next primary node
-        if (!nextNode) {
-          nextNode = nodes.find(
-            (node) => !node.branches && !activeNodeIds.has(node.id)
-          )
-        }
+      if (activeConnectionIndex < activeNodeIndex - 1) {
+        setActiveConnectionIndex(activeNodeIndex - 1)
+      } else if (activeNodeIndex < nodes.length) {
+        setActiveNodeIndex(activeNodeIndex + 1)
       }
-
-      // Update the active states
-      if (nextNode) {
-        setActiveNodeIds(new Set([...activeNodeIds, nextNode.id]))
-      }
-      if (nextLine) {
-        setActiveLineIds(
-          new Set([...activeLineIds, `${nextLine.source}-${nextLine.target}`])
-        )
-      }
-    }, 1000)
+    }, 800)
 
     return () => clearInterval(interval)
-  }, [nodes, connections, activeNodeIds, activeLineIds])
+  }, [nodes.length, activeNodeIndex, activeConnectionIndex])
 
   return (
     <svg style={{ width, height, backgroundColor: 'black' }}>
@@ -89,9 +47,7 @@ const Constellation: React.FC<ConstellationProps> = ({
             y1={sourceNode.y}
             x2={targetNode.x}
             y2={targetNode.y}
-            isActive={activeLineIds.has(
-              `${connection.source}-${connection.target}`
-            )}
+            isActive={idx <= activeConnectionIndex}
           />
         )
       })}
@@ -101,7 +57,7 @@ const Constellation: React.FC<ConstellationProps> = ({
           cx={node.x}
           cy={node.y}
           color="gold"
-          isActive={activeNodeIds.has(node.id)}
+          isActive={idx < activeNodeIndex}
         />
       ))}
     </svg>

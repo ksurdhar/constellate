@@ -10,6 +10,7 @@ export interface Node {
   y: number
   direction?: number
   branches?: boolean
+  isBranchNode?: boolean
 }
 
 export interface Connection {

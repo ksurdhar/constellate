@@ -89,7 +89,7 @@ const useConstellation = (nodeCount: number, width: number, height: number) => {
         previousY = y
       }
 
-      primaryNodes.push({ id: i, x, y })
+      primaryNodes.push({ id: i, x, y, isBranchNode: false })
     }
 
     const primaryConnections: Connection[] = primaryNodes
@@ -145,6 +145,7 @@ const useConstellation = (nodeCount: number, width: number, height: number) => {
         x,
         y: newY,
         direction: angle,
+        isBranchNode: true,
       }
       secondaryNodes.push(newBranchNode)
 

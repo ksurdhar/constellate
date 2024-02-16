@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { animated, config, useSpring } from 'react-spring'
 
 interface HaloProps {
@@ -88,4 +88,4 @@ const StarNode: React.FC<StarNodeProps> = ({
   )
 }
 
-export default StarNode
+export default React.memo(StarNode)

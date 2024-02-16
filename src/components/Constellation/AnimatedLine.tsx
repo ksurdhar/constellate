@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { animated, useSpring } from 'react-spring'
 
 interface AnimatedLineProps {
@@ -24,59 +24,57 @@ const AnimatedLine: React.FC<AnimatedLineProps> = ({
   const initialStrokeDashoffset = dashRepeat * totalDashLength
   const strokeDasharray = `${dashLength}, ${gapLength}`
 
-  const originalAnimatedProps = useSpring({
+  const [_, forceAnimation] = useState(false)
+
+  useEffect(() => {
+    forceAnimation(true)
+  }, [])
+
+  const commonProps = {
+    x1: x1,
+    y1: y1,
+    x2: x2,
+    y2: y2,
+    strokeWidth: '2',
+  }
+
+  const inactiveStyles = useSpring({
     from: { strokeDashoffset: initialStrokeDashoffset },
     to: { strokeDashoffset: 0 },
     config: { duration: 8000 },
     reset: true,
+    opacity: isActive ? 0 : 1,
     onRest: () => {
-      originalAnimatedProps.strokeDashoffset.start({
+      inactiveStyles.strokeDashoffset.start({
         from: initialStrokeDashoffset,
         to: 0,
       })
     },
   })
 
-  const activeAnimatedProps = useSpring({
-    from: { opacity: 0.35 },
-    to: { opacity: 1 },
+  const activeStyles = useSpring({
+    opacity: isActive ? 1 : 0,
     config: { duration: 2000 },
-    loop: { reverse: true },
+    loop: isActive ? { reverse: true } : false,
   })
 
-  if (isActive) {
-    return (
-      <svg style={{ width: '100%', height: '100%', overflow: 'visible' }}>
-        <animated.line
-          x1={x1}
-          y1={y1}
-          x2={x2}
-          y2={y2}
-          stroke="gold"
-          strokeWidth="2"
-          style={{
-            ...activeAnimatedProps,
-          }}
-        />
-      </svg>
-    )
-  } else {
-    // Original inactive state
-    return (
-      <svg style={{ width: '100%', height: '100%', overflow: 'visible' }}>
-        <animated.line
-          x1={x1}
-          y1={y1}
-          x2={x2}
-          y2={y2}
-          stroke="white"
-          strokeWidth="1"
-          strokeDasharray={strokeDasharray}
-          style={originalAnimatedProps}
-        />
-      </svg>
-    )
-  }
+  return (
+    <svg style={{ width: '100%', height: '100%', overflow: 'visible' }}>
+      <animated.line
+        {...commonProps}
+        stroke="white"
+        strokeWidth="1"
+        strokeDasharray={strokeDasharray}
+        style={inactiveStyles}
+      />
+      <animated.line
+        {...commonProps}
+        stroke="gold"
+        strokeWidth="2"
+        style={activeStyles}
+      />
+    </svg>
+  )
 }
 
-export default AnimatedLine
+export default React.memo(AnimatedLine)
