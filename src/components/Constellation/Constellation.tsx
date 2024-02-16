@@ -1,6 +1,7 @@
 import useConstellation from '@/hooks/UseConstellation'
 import React, { useEffect, useState } from 'react'
-import AnimatedLine from './AnimatedLine'
+import ActiveLine from './ActiveLine'
+import InactiveLine from './InactiveLine'
 import StarNode from './StarNode'
 
 interface ConstellationProps {
@@ -41,14 +42,23 @@ const Constellation: React.FC<ConstellationProps> = ({
         if (!sourceNode || !targetNode) return null
 
         return (
-          <AnimatedLine
-            key={`${connection.source}-${connection.target}`}
-            x1={sourceNode.x}
-            y1={sourceNode.y}
-            x2={targetNode.x}
-            y2={targetNode.y}
-            isActive={idx <= activeConnectionIndex}
-          />
+          <>
+            <InactiveLine
+              key={`${connection.source}-${connection.target}`}
+              x1={sourceNode.x}
+              y1={sourceNode.y}
+              x2={targetNode.x}
+              y2={targetNode.y}
+            />
+            <ActiveLine
+              key={`${connection.source}-${connection.target}`}
+              x1={sourceNode.x}
+              y1={sourceNode.y}
+              x2={targetNode.x}
+              y2={targetNode.y}
+              isActive={idx <= activeConnectionIndex}
+            />
+          </>
         )
       })}
       {nodes.map((node, idx) => (

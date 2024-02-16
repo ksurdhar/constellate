@@ -1,21 +1,14 @@
 import React, { useEffect, useState } from 'react'
 import { animated, useSpring } from 'react-spring'
 
-interface AnimatedLineProps {
+interface InactiveLineProps {
   x1: number
   y1: number
   x2: number
   y2: number
-  isActive: boolean
 }
 
-const AnimatedLine: React.FC<AnimatedLineProps> = ({
-  x1,
-  y1,
-  x2,
-  y2,
-  isActive,
-}) => {
+const InactiveLine: React.FC<InactiveLineProps> = ({ x1, y1, x2, y2 }) => {
   const length = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
   const dashLength = 5
   const gapLength = 5
@@ -43,19 +36,12 @@ const AnimatedLine: React.FC<AnimatedLineProps> = ({
     to: { strokeDashoffset: 0 },
     config: { duration: 8000 },
     reset: true,
-    opacity: isActive ? 0 : 1,
     onRest: () => {
       inactiveStyles.strokeDashoffset.start({
         from: initialStrokeDashoffset,
         to: 0,
       })
     },
-  })
-
-  const activeStyles = useSpring({
-    opacity: isActive ? 1 : 0,
-    config: { duration: 2000 },
-    loop: isActive ? { reverse: true } : false,
   })
 
   return (
@@ -67,14 +53,8 @@ const AnimatedLine: React.FC<AnimatedLineProps> = ({
         strokeDasharray={strokeDasharray}
         style={inactiveStyles}
       />
-      <animated.line
-        {...commonProps}
-        stroke="gold"
-        strokeWidth="2"
-        style={activeStyles}
-      />
     </svg>
   )
 }
 
-export default React.memo(AnimatedLine)
+export default React.memo(InactiveLine)
