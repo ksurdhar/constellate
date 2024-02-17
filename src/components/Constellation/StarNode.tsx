@@ -76,6 +76,19 @@ const StarNode: React.FC<StarNodeProps> = ({
     }
   }, [isActive])
 
+  const [_, forceAnimation] = useState(false)
+
+  useEffect(() => {
+    forceAnimation(true)
+  }, [])
+
+  const fadeStyles = useSpring({
+    from: { opacity: 0 },
+    to: { opacity: 1 },
+    reset: true,
+    config: { duration: 2000 },
+  })
+
   return (
     <>
       {showHalo && <Halo cx={cx} cy={cy} color={color} showHalo={showHalo} />}
@@ -83,9 +96,10 @@ const StarNode: React.FC<StarNodeProps> = ({
         cx={cx}
         cy={cy}
         r="3"
-        fill={isActive ? color : 'black'}
+        fill={isActive ? color : 'rgba(12, 14, 18, 0.99)'}
         stroke={isActive ? color : 'white'}
         strokeWidth="1"
+        style={{ ...fadeStyles }}
       />
     </>
   )

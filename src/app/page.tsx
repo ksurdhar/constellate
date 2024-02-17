@@ -89,10 +89,12 @@ const Home = () => {
   // potentially change styles for selected week - use gentle highlight colors for habit labels
   //
 
+  // nodecount should be sum of habit frequencies per week
+
   return (
     <div className="bg-soft-black flex min-h-screen flex-col items-center justify-center py-5 text-lg">
       <div className="flex w-full max-w-4xl flex-row px-4">
-        <div className="min-w-fit flex-1 gap-4 flex flex-col">
+        <div className="min-w-fit flex-1 gap-4 flex flex-col self-center">
           <form onSubmit={handleSubmit} className="flex gap-2">
             <div className="flex flex-col">
               <label
@@ -163,7 +165,14 @@ const Home = () => {
           </div>
         </div>
         <div className="cal flex-1">
-          <Constellation nodeCount={10} width={550} height={400} />
+          <Constellation
+            nodeCount={habits.reduce(
+              (acc, habit) => acc + habit.frequencyPerWeek,
+              0
+            )}
+            width={550}
+            height={400}
+          />
           {/* <p>
             Selected date:{' '}
             {selectedDate

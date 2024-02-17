@@ -32,6 +32,17 @@ const Constellation: React.FC<ConstellationProps> = ({
   //   return () => clearInterval(interval)
   // }, [nodes.length, activeNodeIndex, activeConnectionIndex])
 
+  if (nodeCount === 0) {
+    return (
+      <div
+        style={{ height, width }}
+        className="self-center text-center flex justify-around flex-col text-zinc-500"
+      >
+        Add habits to form a constellation
+      </div>
+    )
+  }
+
   return (
     <svg style={{ width, height, backgroundColor: 'transparent' }}>
       {connections.map((connection, idx) => {
