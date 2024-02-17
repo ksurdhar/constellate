@@ -94,7 +94,7 @@ const Home = () => {
   return (
     <div className="bg-soft-black flex min-h-screen flex-col items-center justify-center py-5 text-lg">
       <div className="flex w-full max-w-4xl flex-row px-4">
-        <div className="min-w-fit flex-1 gap-4 flex flex-col self-center">
+        <div className="min-w-fit flex-1 gap-4 flex flex-col self-center transition-all duration-500 ease-in-out">
           <form onSubmit={handleSubmit} className="flex gap-2">
             <div className="flex flex-col">
               <label
@@ -104,6 +104,7 @@ const Home = () => {
                 Habit
               </label>
               <input
+                autoFocus={true}
                 id="habitName"
                 type="text"
                 placeholder="Habit name"
@@ -160,6 +161,16 @@ const Home = () => {
                     </td>
                   </tr>
                 ))}
+                {habits.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan={2}
+                      className="py-3 px-4 text-zinc-500 text-center"
+                    >
+                      Empty
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
