@@ -1,10 +1,10 @@
 import type { Metadata } from 'next'
-import { Noto_Sans } from 'next/font/google'
+import { Inter } from 'next/font/google'
 import './globals.css'
 
-const notoSans = Noto_Sans({
+const inter = Inter({
   style: 'normal',
-  weight: '400',
+  weight: ['400', '600'],
   subsets: ['latin'],
 })
 
@@ -20,7 +20,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={notoSans.className}>{children}</body>
+      <body className={inter.className}>{children}</body>
     </html>
   )
 }

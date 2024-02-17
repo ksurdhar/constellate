@@ -62,27 +62,27 @@ const Home = () => {
     setHabits(habits.filter((habit) => habit.id !== id))
   }
 
-  const dailyEntry =
-    selectedDate && entries[normalizeDate(selectedDate)]
-      ? entries[normalizeDate(selectedDate)]
-      : { completedHabitIds: [] }
+  // const dailyEntry =
+  //   selectedDate && entries[normalizeDate(selectedDate)]
+  //     ? entries[normalizeDate(selectedDate)]
+  //     : { completedHabitIds: [] }
 
-  const toggleDailyHabit = (habit: Habit) => {
-    if (!selectedDate) return
+  // const toggleDailyHabit = (habit: Habit) => {
+  //   if (!selectedDate) return
 
-    if (dailyEntry.completedHabitIds.includes(habit.id)) {
-      dailyEntry.completedHabitIds = dailyEntry.completedHabitIds.filter(
-        (id) => id !== habit.id
-      )
-    } else {
-      dailyEntry.completedHabitIds.push(habit.id)
-    }
-    setEntries({
-      ...entries,
-      [normalizeDate(selectedDate)]: dailyEntry,
-    })
-    console.log(entries)
-  }
+  //   if (dailyEntry.completedHabitIds.includes(habit.id)) {
+  //     dailyEntry.completedHabitIds = dailyEntry.completedHabitIds.filter(
+  //       (id) => id !== habit.id
+  //     )
+  //   } else {
+  //     dailyEntry.completedHabitIds.push(habit.id)
+  //   }
+  //   setEntries({
+  //     ...entries,
+  //     [normalizeDate(selectedDate)]: dailyEntry,
+  //   })
+  //   console.log(entries)
+  // }
 
   // display selected week
   // determine startDate / endDate, pass those to datepicker
@@ -90,86 +90,100 @@ const Home = () => {
   //
 
   return (
-    <Constellation nodeCount={10} width={600} height={450} />
-    // <div className="flex flex-col items-center justify-center min-h-screen py-5 bg-soft-black text-lg">
-    //   <div className="flex flex-row w-full max-w-4xl px-4">
-    //     <div className="flex-1">
-    //       <form onSubmit={handleSubmit} className="flex gap-2 flex-col">
-    //         <div className="flex flex-col">
-    //           <label className="text-slate-400" htmlFor="habitName">
-    //             Habit
-    //           </label>
-    //           <input
-    //             id="habitName"
-    //             type="text"
-    //             placeholder="name"
-    //             className="bg-transparent border border-slate-600 placeholder:text-slate-700
-    //              hover:border-slate-200 rounded focus:outline-none transition-colors focus:border-orange-yellow p-1 px-3"
-    //             value={habitName}
-    //             onChange={(e) => setHabitName(e.target.value)}
-    //             required
-    //           />
-    //         </div>
-    //         <div className="flex flex-col">
-    //           <label className="text-slate-400" htmlFor="frequency">
-    //             Frequency (weekly)
-    //           </label>
-    //           <select
-    //             id="frequency"
-    //             className="bg-transparent border border-slate-600
-    //             hover:border-slate-200 rounded focus:outline-none transition-colors focus:border-orange-yellow p-1 px-3 h-[38px]"
-    //             value={frequency}
-    //             onChange={(e) => setFrequency(e.target.value)}
-    //             required
-    //           >
-    //             {[...Array(7).keys()].map((num) => (
-    //               <option key={num + 1} value={num + 1}>
-    //                 {num + 1}x
-    //               </option>
-    //             ))}
-    //           </select>
-    //         </div>
-    //         <button type="submit">Add</button>
-    //       </form>
-    //       <div>
-    //         <h2>My Habits</h2>
-    //         <ul>
-    //           {habits.map(({ id, name, frequencyPerWeek }) => (
-    //             <li key={id}>
-    //               {name} - {frequencyPerWeek} times per week
-    //               <button
-    //                 onClick={() => handleDelete(id)}
-    //                 style={{ marginLeft: '10px' }}
-    //               >
-    //                 Delete
-    //               </button>
-    //             </li>
-    //           ))}
-    //         </ul>
-    //       </div>
-
-    //     </div>
-    //     <div className="flex-1 cal">
-    //       <p>
-    //         Selected date:{' '}
-    //         {selectedDate
-    //           ? format(selectedDate, 'dd MMM yyyy', { locale: enGB })
-    //           : 'none'}
-    //         .
-    //       </p>
-    //       <DatePickerCalendar
-    //         date={selectedDate ? selectedDate : defaultDate}
-    //         onDateChange={(date) => setSelectedDate(date)}
-    //         locale={enGB}
-    //       />
-    //       <DailyHabits
-    //         completedHabitIds={dailyEntry.completedHabitIds}
-    //         habits={habits}
-    //         onToggle={toggleDailyHabit}
-    //       />
-    //     </div>
-    //   </div>
-    // </div>
+    <div className="bg-soft-black flex min-h-screen flex-col items-center justify-center py-5 text-lg">
+      <div className="flex w-full max-w-4xl flex-row px-4">
+        <div className="min-w-fit flex-1 gap-4 flex flex-col">
+          <form onSubmit={handleSubmit} className="flex gap-2">
+            <div className="flex flex-col">
+              <label
+                className="text-zinc-400 text-xs font-semibold pb-2"
+                htmlFor="habitName"
+              >
+                Habit
+              </label>
+              <input
+                id="habitName"
+                type="text"
+                placeholder="Habit name"
+                className="rounded border border-zinc-700 bg-transparent py-2 px-3 text-base transition-colors placeholder:text-zinc-500 hover:border-zinc-200 focus:border-orange-yellow focus:outline-none"
+                value={habitName}
+                onChange={(e) => setHabitName(e.target.value)}
+                required
+              />
+            </div>
+            <div className="flex flex-col">
+              <label
+                className="text-zinc-400 text-xs font-semibold pb-2"
+                htmlFor="frequency"
+              >
+                Frequency (weekly)
+              </label>
+              <select
+                id="frequency"
+                className="rounded border border-zinc-700 bg-transparent py-[9px] px-3 text-base transition-colors placeholder:text-zinc-500 hover:border-zinc-200 focus:border-orange-yellow focus:outline-none"
+                value={frequency}
+                onChange={(e) => setFrequency(e.target.value)}
+                required
+              >
+                {[...Array(7).keys()].map((num) => (
+                  <option key={num + 1} value={num + 1}>
+                    {num + 1}x
+                  </option>
+                ))}
+              </select>
+            </div>
+            <button
+              className="w-max min-w-[72px] max-h-[42px] self-end border border-solid border-yellow-600 text-yellow-400 px-3 py-2 rounded-md text-base outline-none transition-colors ease-in hover:bg-yellow-400/15 focus:bg-yellow-400/15 
+              focus-visible:ring-2 focus-visible:ring-yellow-400 focus-visible:ring-opacity-50 focus-visible:ring-offset-2 focus-visible:ring-offset-yellow-400 focus-visible:ring-offset-opacity-50"
+              type="submit"
+            >
+              Add
+            </button>
+          </form>
+          <div className="overflow-x-auto rounded-lg border border-zinc-700">
+            <table className="border-collapse w-full select-auto text-left text-zinc-400">
+              <thead className="pb-2 text-xs [&>tr]:border-b [&>tr]:border-zinc-700 [&>tr]:bg-transparent [&>tr]:hover:bg-transparent ">
+                <tr className="[&.selected]:bg-gray-100 [&.inserting]:bg-transparent hover:bg-gray-100">
+                  <th className="py-3 px-4 font-extrabold w-[65%]">Habit</th>
+                  <th className="py-3 px-4 font-extrabold">Frequency</th>
+                </tr>
+              </thead>
+              <tbody className="text-sm">
+                {habits.map(({ id, name, frequencyPerWeek }) => (
+                  <tr key={id}>
+                    <td className="py-3 px-4">{name}</td>
+                    <td className="py-3 px-4">
+                      {frequencyPerWeek}{' '}
+                      <button onClick={() => handleDelete(id)}>x</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div className="cal flex-1">
+          <Constellation nodeCount={10} width={550} height={400} />
+          {/* <p>
+            Selected date:{' '}
+            {selectedDate
+              ? format(selectedDate, 'dd MMM yyyy', { locale: enGB })
+              : 'none'}
+            .
+          </p>
+          <DatePickerCalendar
+            date={selectedDate ? selectedDate : defaultDate}
+            onDateChange={(date) => setSelectedDate(date)}
+            locale={enGB}
+          />
+          <DailyHabits
+            completedHabitIds={dailyEntry.completedHabitIds}
+            habits={habits}
+            onToggle={toggleDailyHabit}
+          /> */}
+        </div>
+      </div>
+    </div>
   )
 }
 

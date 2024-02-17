@@ -1,5 +1,5 @@
 import useConstellation from '@/hooks/UseConstellation'
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import ActiveLine from './ActiveLine'
 import InactiveLine from './InactiveLine'
 import StarNode from './StarNode'
@@ -20,20 +20,20 @@ const Constellation: React.FC<ConstellationProps> = ({
   const [activeNodeIndex, setActiveNodeIndex] = useState(0)
   const [activeConnectionIndex, setActiveConnectionIndex] = useState(-1) // Start from -1 since we activate nodes first
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (activeConnectionIndex < activeNodeIndex - 1) {
-        setActiveConnectionIndex(activeNodeIndex - 1)
-      } else if (activeNodeIndex < nodes.length) {
-        setActiveNodeIndex(activeNodeIndex + 1)
-      }
-    }, 800)
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     if (activeConnectionIndex < activeNodeIndex - 1) {
+  //       setActiveConnectionIndex(activeNodeIndex - 1)
+  //     } else if (activeNodeIndex < nodes.length) {
+  //       setActiveNodeIndex(activeNodeIndex + 1)
+  //     }
+  //   }, 800)
 
-    return () => clearInterval(interval)
-  }, [nodes.length, activeNodeIndex, activeConnectionIndex])
+  //   return () => clearInterval(interval)
+  // }, [nodes.length, activeNodeIndex, activeConnectionIndex])
 
   return (
-    <svg style={{ width, height, backgroundColor: 'black' }}>
+    <svg style={{ width, height, backgroundColor: 'transparent' }}>
       {connections.map((connection, idx) => {
         const sourceNode = nodes.find((n) => n.id === connection.source)
         const targetNode = nodes.find((n) => n.id === connection.target)
