@@ -1,12 +1,13 @@
 'use client'
 
+import AddHabitForm from '@/components/AddHabitForm'
 import Constellation from '@/components/Constellation/Constellation'
 import DailyHabits from '@/components/DailyHabits'
+import HabitTable from '@/components/HabitTable'
 import { Habit } from '@/types'
 import { format } from 'date-fns'
 import { enGB } from 'date-fns/locale'
 import { useEffect, useState } from 'react'
-import { MdDeleteOutline } from 'react-icons/md'
 import { DatePickerCalendar } from 'react-nice-dates'
 import 'react-nice-dates/build/style.css'
 import { animated, useSpring, useTransition } from 'react-spring'
@@ -35,8 +36,6 @@ const normalizeDate = (date: Date) => {
 }
 
 const Home = () => {
-  const [habitName, setHabitName] = useState('')
-  const [frequency, setFrequency] = useState('1')
   const [habits, setHabits] = useState<Habit[]>([
     { id: '1', name: 'Exercise', frequencyPerWeek: 3 },
     { id: '2', name: 'Read', frequencyPerWeek: 5 },
@@ -49,19 +48,17 @@ const Home = () => {
     [normalizeDate(defaultDate)]: { completedHabitIds: [] },
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const addHabit = (e: React.FormEvent, name: string, frequency: string) => {
     e.preventDefault()
 
     const newHabit: Habit = {
       id: nextId,
-      name: habitName,
+      name,
       frequencyPerWeek: parseInt(frequency),
     }
 
     setHabits([...habits, newHabit])
-    setNextId(nextId + 1) // Increment the nextId for uniqueness
-    setHabitName('')
-    setFrequency('1')
+    setNextId(nextId + 1)
   }
 
   const handleDelete = (id: string) => {
@@ -90,14 +87,14 @@ const Home = () => {
     console.log(entries)
   }
 
-  const [isHabitEditorOpen, setIsHabitEditorOpen] = useState(true)
+  const [view, setView] = useState<'HABITS' | 'DAILY'>('HABITS')
   const [isFirstMount, setIsFirstMount] = useState(true)
 
   useEffect(() => {
     setIsFirstMount(false)
   }, [])
 
-  const leftPanelTransitions = useTransition(isHabitEditorOpen, {
+  const leftPanelTransitions = useTransition(view, {
     from: isFirstMount ? {} : { opacity: 0, x: -500 },
     enter: { opacity: 1, x: 0 },
     leave: { opacity: 0, x: -500 },
@@ -105,12 +102,12 @@ const Home = () => {
   })
 
   const { x } = useSpring({
-    x: isFirstMount ? 0 : isHabitEditorOpen ? 0 : -500,
+    x: isFirstMount ? 0 : view === 'HABITS' ? 0 : -500,
     config: { duration: 600 },
     from: { x: 0 },
   })
 
-  const rightPanelTransitions = useTransition(isHabitEditorOpen, {
+  const rightPanelTransitions = useTransition(view, {
     from: isFirstMount ? {} : { opacity: 0, x: 500 },
     enter: { opacity: 1, x: 0 },
     leave: { opacity: 0, x: 500 },
@@ -120,100 +117,14 @@ const Home = () => {
   return (
     <div className="bg-soft-black flex min-h-screen flex-col items-center justify-center py-5 text-lg">
       <div className="w-full max-w-4xl px-4 relative">
-        {leftPanelTransitions((style, item) =>
-          item ? (
+        {leftPanelTransitions((style, viewState) =>
+          viewState === 'HABITS' ? (
             <animated.div
               style={style}
               className="min-w-fit flex-1 gap-4 flex flex-col self-center absolute top-[-120px] left-[-40px]"
             >
-              <form onSubmit={handleSubmit} className="flex gap-2">
-                <div className="flex flex-col">
-                  <label
-                    className="text-zinc-400 text-xs font-semibold pb-2"
-                    htmlFor="habitName"
-                  >
-                    Habit
-                  </label>
-                  <input
-                    autoFocus={true}
-                    autoComplete={'off'}
-                    id="habitName"
-                    type="text"
-                    placeholder="Habit name"
-                    className="rounded border border-zinc-700 bg-transparent py-2 px-3 text-base transition-colors placeholder:text-zinc-500 hover:border-zinc-200 focus:border-orange-yellow focus:outline-none"
-                    value={habitName}
-                    onChange={(e) => setHabitName(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="flex flex-col">
-                  <label
-                    className="text-zinc-400 text-xs font-semibold pb-2"
-                    htmlFor="frequency"
-                  >
-                    Frequency (weekly)
-                  </label>
-                  <select
-                    id="frequency"
-                    className="rounded border border-zinc-700 bg-transparent py-[9px] px-3 text-base transition-colors placeholder:text-zinc-500 hover:border-zinc-200 focus:border-orange-yellow focus:outline-none"
-                    value={frequency}
-                    onChange={(e) => setFrequency(e.target.value)}
-                    required
-                  >
-                    {[...Array(7).keys()].map((num) => (
-                      <option key={num + 1} value={num + 1}>
-                        {num + 1}x
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <button
-                  className="w-max min-w-[72px] max-h-[42px] self-end border border-solid border-yellow-600 text-yellow-400 px-3 py-2 rounded-md text-base outline-none transition-colors ease-in hover:bg-yellow-400/15 focus:bg-yellow-400/15 
-              focus-visible:ring-2 focus-visible:ring-yellow-400 focus-visible:ring-opacity-50 focus-visible:ring-offset-2 focus-visible:ring-offset-yellow-400 focus-visible:ring-offset-opacity-50"
-                  type="submit"
-                >
-                  Add
-                </button>
-              </form>
-              <div className="overflow-x-auto rounded-lg border border-zinc-700">
-                <table className="border-collapse w-full select-auto text-left text-zinc-400">
-                  <thead className="pb-2 text-xs [&>tr]:border-b [&>tr]:border-zinc-700 [&>tr]:bg-transparent [&>tr]:hover:bg-transparent ">
-                    <tr className="[&.selected]:bg-gray-100 [&.inserting]:bg-transparent hover:bg-gray-100">
-                      <th className="py-3 px-4 font-extrabold w-[65%]">
-                        Habit
-                      </th>
-                      <th className="py-3 px-4 font-extrabold">Frequency</th>
-                    </tr>
-                  </thead>
-                  <tbody className="text-sm">
-                    {habits.map(({ id, name, frequencyPerWeek }) => (
-                      <tr
-                        key={id}
-                        className="group hover:bg-white/5 hover:text-zinc-200"
-                      >
-                        <td className="py-3 px-4">{name}</td>
-                        <td className="py-3 px-4 flex justify-between">
-                          {`${frequencyPerWeek}x`}
-                          <MdDeleteOutline
-                            className="text-lg cursor-pointer hover:text-red-400"
-                            onClick={() => handleDelete(id)}
-                          />
-                        </td>
-                      </tr>
-                    ))}
-                    {habits.length === 0 && (
-                      <tr className="hover:bg-white/50">
-                        <td
-                          colSpan={2}
-                          className="py-3 px-4 text-zinc-500 text-center"
-                        >
-                          Empty
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
+              <AddHabitForm addHabit={addHabit} />
+              <HabitTable habits={habits} handleDelete={handleDelete} />
             </animated.div>
           ) : null
         )}
@@ -229,11 +140,11 @@ const Home = () => {
             )}
             width={550}
             height={400}
-            toggleView={() => setIsHabitEditorOpen(!isHabitEditorOpen)}
+            toggleView={() => setView(view === 'HABITS' ? 'DAILY' : 'HABITS')}
           />
         </animated.div>
-        {rightPanelTransitions((style, item) =>
-          !item ? (
+        {rightPanelTransitions((style, viewState) =>
+          viewState === 'DAILY' ? (
             <animated.div
               style={style}
               className="cal flex-1 absolute top-[-240px] right-[14px] w-[400px]"
