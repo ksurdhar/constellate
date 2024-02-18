@@ -42,12 +42,6 @@ const Home = () => {
     { id: '3', name: 'Meditate', frequencyPerWeek: 7 },
   ])
   const [nextId, setNextId] = useState('1')
-  const defaultDate = new Date()
-  const [selectedDate, setSelectedDate] = useState<Date | null>(defaultDate)
-  const [entries, setEntries] = useState<Entries>({
-    [normalizeDate(defaultDate)]: { completedHabitIds: [] },
-  })
-
   const addHabit = (e: React.FormEvent, name: string, frequency: string) => {
     e.preventDefault()
 
@@ -64,6 +58,14 @@ const Home = () => {
   const handleDelete = (id: string) => {
     setHabits(habits.filter((habit) => habit.id !== id))
   }
+
+  const todaysDate = new Date()
+  const [selectedDate, setSelectedDate] = useState<Date | null>(todaysDate)
+  const [entries, setEntries] = useState<Entries>({
+    [normalizeDate(todaysDate)]: { completedHabitIds: [] },
+  })
+
+  // get entries for current week
 
   const dailyEntry =
     selectedDate && entries[normalizeDate(selectedDate)]
@@ -87,7 +89,7 @@ const Home = () => {
     console.log(entries)
   }
 
-  const [view, setView] = useState<'HABITS' | 'DAILY'>('HABITS')
+  const [view, setView] = useState<'HABITS' | 'DAILY'>('DAILY')
   const [isFirstMount, setIsFirstMount] = useState(true)
 
   useEffect(() => {
@@ -147,7 +149,7 @@ const Home = () => {
           viewState === 'DAILY' ? (
             <animated.div
               style={style}
-              className="cal flex-1 absolute top-[-240px] right-[14px] w-[400px]"
+              className="cal flex-1 absolute top-[-200px] right-[-80px] w-[550px] h-[600px]"
             >
               <p>
                 Selected date:{' '}
@@ -156,16 +158,20 @@ const Home = () => {
                   : 'none'}
                 .
               </p>
-              <DatePickerCalendar
-                date={selectedDate ? selectedDate : defaultDate}
-                onDateChange={(date) => setSelectedDate(date)}
-                locale={enGB}
-              />
-              <DailyHabits
-                completedHabitIds={dailyEntry.completedHabitIds}
-                habits={habits}
-                onToggle={toggleDailyHabit}
-              />
+              <div className="flex gap-3">
+                <div className="flex-[2] h-96">
+                  <DatePickerCalendar
+                    date={selectedDate ? selectedDate : todaysDate}
+                    onDateChange={(date) => setSelectedDate(date)}
+                    locale={enGB}
+                  />
+                </div>
+                <DailyHabits
+                  completedHabitIds={dailyEntry.completedHabitIds}
+                  habits={habits}
+                  onToggle={toggleDailyHabit}
+                />
+              </div>
             </animated.div>
           ) : null
         )}

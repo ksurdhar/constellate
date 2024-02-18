@@ -13,7 +13,7 @@ const DailyHabits = ({
   onToggle,
 }: DailyHabitsProps) => {
   return (
-    <>
+    <div className="flex flex-col flex-1 justify-center">
       {habits.map((habit) => (
         <HabitCheckbox
           key={habit.name}
@@ -22,7 +22,7 @@ const DailyHabits = ({
           onToggle={onToggle}
         />
       ))}
-    </>
+    </div>
   )
 }
 
