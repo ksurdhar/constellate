@@ -10,12 +10,14 @@ interface ConstellationProps {
   nodeCount: number
   width: number
   height: number
+  toggleView: () => void
 }
 
 const Constellation: React.FC<ConstellationProps> = ({
   nodeCount,
   width,
   height,
+  toggleView,
 }) => {
   const { nodes, connections } = useConstellation(nodeCount, width, height)
 
@@ -102,12 +104,15 @@ const Constellation: React.FC<ConstellationProps> = ({
         style={{ opacity: isHovered ? 1 : 0 }}
       >
         <span className="text-zinc-200 text-sm bg-black/5">
-          As you track habits, this constellation will connect.
-        </span>
-        <span className="text-zinc-200 text-sm bg-black/5">
           Each star represents a weekly habit to complete.
         </span>
-        <button className="text-yellow-400 text-sm rounded-md hover:bg-yellow-400/15 py-1 px-2 flex gap-1 align-middle">
+        <span className="text-zinc-200 text-sm bg-black/5">
+          As you track habits, this constellation will connect.
+        </span>
+        <button
+          onClick={() => toggleView()}
+          className="text-yellow-400 text-sm rounded-md hover:bg-yellow-400/15 py-1 px-2 flex gap-1 align-middle"
+        >
           <FaCaretRight className="self-center text-xl" />
           Track Habits
         </button>

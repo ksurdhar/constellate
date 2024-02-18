@@ -22,7 +22,7 @@ const HabitCheckbox = ({ habit, onToggle, checked = false }: HabitProps) => {
             <use xlinkHref="#check-4"></use>
           </svg>
         </span>
-        <span>{habit.name}</span>
+        <span className="text-zinc-300">{habit.name}</span>
       </label>
       <svg className="inline-svg">
         <symbol id="check-4" viewBox="0 0 12 10">
