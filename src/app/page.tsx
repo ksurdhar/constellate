@@ -3,6 +3,7 @@
 import Constellation from '@/components/Constellation/Constellation'
 import { Habit } from '@/types'
 import { useState } from 'react'
+import { MdDeleteOutline } from 'react-icons/md'
 import 'react-nice-dates/build/style.css'
 
 interface Entry {
@@ -105,6 +106,7 @@ const Home = () => {
               </label>
               <input
                 autoFocus={true}
+                autoComplete={'off'}
                 id="habitName"
                 type="text"
                 placeholder="Habit name"
@@ -153,16 +155,22 @@ const Home = () => {
               </thead>
               <tbody className="text-sm">
                 {habits.map(({ id, name, frequencyPerWeek }) => (
-                  <tr key={id}>
+                  <tr
+                    key={id}
+                    className="group hover:bg-white/5 hover:text-zinc-200"
+                  >
                     <td className="py-3 px-4">{name}</td>
-                    <td className="py-3 px-4">
-                      {frequencyPerWeek}{' '}
-                      <button onClick={() => handleDelete(id)}>x</button>
+                    <td className="py-3 px-4 flex justify-between">
+                      {`${frequencyPerWeek}x`}
+                      <MdDeleteOutline
+                        className="text-lg cursor-pointer hover:text-red-400"
+                        onClick={() => handleDelete(id)}
+                      />
                     </td>
                   </tr>
                 ))}
                 {habits.length === 0 && (
-                  <tr>
+                  <tr className="hover:bg-white/50">
                     <td
                       colSpan={2}
                       className="py-3 px-4 text-zinc-500 text-center"

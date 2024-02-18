@@ -1,4 +1,6 @@
 import useConstellation from '@/hooks/UseConstellation'
+import { FaCaretRight } from 'react-icons/fa6'
+
 import React, { useState } from 'react'
 import ActiveLine from './ActiveLine'
 import InactiveLine from './InactiveLine'
@@ -57,7 +59,7 @@ const Constellation: React.FC<ConstellationProps> = ({
           width: '100%',
           height: '100%',
           backgroundColor: 'transparent',
-          opacity: isHovered ? 0.4 : 1,
+          opacity: isHovered ? 0.3 : 1,
         }}
       >
         {connections.map((connection, idx) => {
@@ -96,12 +98,19 @@ const Constellation: React.FC<ConstellationProps> = ({
         ))}
       </svg>
       <div
-        className="absolute inset-0 flex justify-center items-center transition-opacity duration-500 ease-in-out cursor-pointer"
+        className="absolute inset-0 flex justify-center items-center transition-opacity duration-500 ease-in-out cursor-pointer flex-col gap-2"
         style={{ opacity: isHovered ? 1 : 0 }}
       >
-        <span className="text-zinc-100 text-base bg-black/5">
+        <span className="text-zinc-200 text-sm bg-black/5">
           As you track habits, this constellation will connect.
         </span>
+        <span className="text-zinc-200 text-sm bg-black/5">
+          Each star represents a weekly habit to complete.
+        </span>
+        <button className="text-yellow-400 text-sm rounded-md hover:bg-yellow-400/15 py-1 px-2 flex gap-1 align-middle">
+          <FaCaretRight className="self-center text-xl" />
+          Track Habits
+        </button>
       </div>
     </div>
   )
