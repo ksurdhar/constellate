@@ -3,13 +3,15 @@ import HabitCheckbox from './HabitCheckbox'
 
 interface WeeklyHabitsProps {
   habits: Habit[]
-  completedHabitIds: string[]
+  dailyCompletedHabits: string[]
+  weeklyCompletedHabits: string[]
   onToggle: (habit: Habit) => void
 }
 
 const WeeklyHabits = ({
   habits,
-  completedHabitIds,
+  dailyCompletedHabits,
+  weeklyCompletedHabits,
   onToggle,
 }: WeeklyHabitsProps) => {
   return (
@@ -22,21 +24,34 @@ const WeeklyHabits = ({
           </tr>
         </thead>
         <tbody className="text-sm">
-          {habits.map((habit) => (
-            <tr
-              key={habit.id}
-              className="group hover:bg-white/5 hover:text-zinc-200"
-            >
-              <td className="py-1 px-4">
-                <HabitCheckbox
-                  habit={habit}
-                  checked={completedHabitIds.includes(habit.id)}
-                  onToggle={onToggle}
-                />
-              </td>
-              <td className="py-3 px-4 flex justify-between">{`0/${habit.frequencyPerWeek}`}</td>
-            </tr>
-          ))}
+          {habits.map((habit) => {
+            const weeklyHabitCount = weeklyCompletedHabits.reduce(
+              (acc, val) => {
+                if (val === habit.id) {
+                  return acc + 1
+                }
+                return acc
+              },
+              0
+            )
+
+            return (
+              <tr
+                key={habit.id}
+                className="group hover:bg-white/5 hover:text-zinc-200"
+              >
+                <td className="py-1 px-4">
+                  <HabitCheckbox
+                    habit={habit}
+                    checked={dailyCompletedHabits.includes(habit.id)}
+                    onToggle={onToggle}
+                    disabled={weeklyHabitCount === habit.frequencyPerWeek}
+                  />
+                </td>
+                <td className="py-3 px-4 flex justify-between">{`${weeklyHabitCount}/${habit.frequencyPerWeek}`}</td>
+              </tr>
+            )
+          })}
           {habits.length === 0 && (
             <tr className="hover:bg-white/5 hover:text-zinc-200">
               <td colSpan={2} className="py-3 px-4 text-zinc-500 text-center">

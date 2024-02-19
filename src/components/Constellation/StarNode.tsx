@@ -82,10 +82,10 @@ const StarNode: React.FC<StarNodeProps> = ({
     forceAnimation(true)
   }, [])
 
-  const fadeStyles = useSpring({
-    from: { opacity: 0 },
-    to: { opacity: 1 },
-    config: { duration: 2000 },
+  const style = useSpring({
+    fill: isActive ? color : 'rgba(12, 14, 18, 0.99)',
+    stroke: isActive ? color : 'white',
+    config: { duration: 800 }, // Transition duration of 800ms
   })
 
   return (
@@ -98,7 +98,7 @@ const StarNode: React.FC<StarNodeProps> = ({
         fill={isActive ? color : 'rgba(12, 14, 18, 0.99)'}
         stroke={isActive ? color : 'white'}
         strokeWidth="1"
-        style={{ ...fadeStyles }}
+        style={style}
       />
     </>
   )

@@ -4,12 +4,19 @@ interface CheckboxProps {
   habit: Habit
   onToggle: (habit: Habit) => void
   checked: boolean
+  disabled: boolean
 }
 
-const HabitCheckbox = ({ habit, onToggle, checked = false }: CheckboxProps) => {
+const HabitCheckbox = ({
+  habit,
+  onToggle,
+  checked = false,
+  disabled,
+}: CheckboxProps) => {
   return (
     <div className="checkbox-wrapper">
       <input
+        disabled={disabled && !checked}
         className="inp-cbx"
         id={habit.name}
         type="checkbox"

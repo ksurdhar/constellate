@@ -27,20 +27,20 @@ const normalizedDateString = (date: Date) => {
   return format(date, 'yyyy-MM-dd')
 }
 
-const getCompletedHabitsCountForWeek = (
+const getCompletedHabitsForWeek = (
   entries: Entries,
   selectedDate: Date | null
-): number => {
-  if (!selectedDate) return 0
+): string[] => {
+  if (!selectedDate) return []
 
   return Object.keys(entries)
     .filter((key) => {
       return isSameWeek(key, normalizedDateString(selectedDate))
     })
-    .reduce((total, key) => {
+    .reduce((acc: string[], key) => {
       const entry = entries[key]
-      return total + entry.completedHabitIds.length
-    }, 0)
+      return acc.concat(entry.completedHabitIds)
+    }, [])
 }
 
 interface Entry {
@@ -128,6 +128,8 @@ const Home = () => {
     config: { duration: 500 },
   })
 
+  const completedWeeklyHabits = getCompletedHabitsForWeek(entries, selectedDate)
+
   return (
     <div className="bg-soft-black flex min-h-screen flex-col items-center justify-center py-5 text-lg">
       <div className="w-full max-w-4xl px-4 relative">
@@ -154,10 +156,7 @@ const Home = () => {
             )}
             width={550}
             height={400}
-            completedHabits={getCompletedHabitsCountForWeek(
-              entries,
-              selectedDate
-            )}
+            completedHabits={completedWeeklyHabits.length}
             toggleView={() => setView(view === 'HABITS' ? 'DAILY' : 'HABITS')}
           />
         </animated.div>
@@ -172,7 +171,8 @@ const Home = () => {
                 setSelectedDate={setSelectedDate}
               />
               <WeeklyHabits
-                completedHabitIds={dailyEntry.completedHabitIds}
+                dailyCompletedHabits={dailyEntry.completedHabitIds}
+                weeklyCompletedHabits={completedWeeklyHabits}
                 habits={habits}
                 onToggle={toggleDailyHabit}
               />
