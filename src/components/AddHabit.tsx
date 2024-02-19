@@ -2,11 +2,11 @@
 
 import { useState } from 'react'
 
-interface AddHabitFormProps {
+interface AddHabitProps {
   addHabit: (e: React.FormEvent, name: string, frequency: string) => void
 }
 
-const AddHabitForm = ({ addHabit }: AddHabitFormProps) => {
+const AddHabit = ({ addHabit }: AddHabitProps) => {
   const [name, setName] = useState('')
   const [frequency, setFrequency] = useState('1')
 
@@ -63,4 +63,4 @@ const AddHabitForm = ({ addHabit }: AddHabitFormProps) => {
   )
 }
 
-export default AddHabitForm
+export default AddHabit

@@ -1,21 +1,13 @@
 'use client'
 
-import AddHabitForm from '@/components/AddHabitForm'
+import AddHabit from '@/components/AddHabit'
 import Constellation from '@/components/Constellation/Constellation'
-import DailyHabits from '@/components/DailyHabits'
+import DateSelector from '@/components/DateSelector'
 import HabitTable from '@/components/HabitTable'
+import WeeklyHabits from '@/components/WeeklyHabits'
 import { Habit } from '@/types'
-import { isSameWeek } from 'date-fns'
-import { enGB } from 'date-fns/locale'
 import { useEffect, useState } from 'react'
-import { DatePicker } from 'react-nice-dates'
 import { animated, useSpring, useTransition } from 'react-spring'
-
-interface Entry {
-  completedHabitIds: string[] // display empty checkboxes for every habit, add only if checked
-}
-
-type Entries = { [key: string]: Entry }
 
 // REMOVE ONCE ADDRESSED WITH FORK
 const originalWarn = console.error
@@ -33,6 +25,12 @@ console.error = (...args) => {
 const normalizeDate = (date: Date) => {
   return date.toISOString().slice(0, 10)
 }
+
+interface Entry {
+  completedHabitIds: string[]
+}
+
+type Entries = { [key: string]: Entry }
 
 const Home = () => {
   const [habits, setHabits] = useState<Habit[]>([
@@ -63,16 +61,6 @@ const Home = () => {
   const [entries, setEntries] = useState<Entries>({
     [normalizeDate(todaysDate)]: { completedHabitIds: [] },
   })
-
-  const modifiers = {
-    highlight: (date: Date) =>
-      isSameWeek(date, selectedDate ? selectedDate : todaysDate, {
-        weekStartsOn: 1,
-      }),
-  }
-  const modifiersClassNames = {
-    highlight: '-highlight',
-  }
 
   // get entries for current week
 
@@ -109,12 +97,12 @@ const Home = () => {
     from: isFirstMount ? {} : { opacity: 0, x: -500 },
     enter: { opacity: 1, x: 0 },
     leave: { opacity: 0, x: -500 },
-    config: { duration: 600 },
+    config: { duration: 500 },
   })
 
   const { x } = useSpring({
     x: isFirstMount ? 0 : view === 'HABITS' ? 0 : -500,
-    config: { duration: 600 },
+    config: { duration: 500 },
     from: { x: 0 },
   })
 
@@ -122,7 +110,7 @@ const Home = () => {
     from: isFirstMount ? {} : { opacity: 0, x: 500 },
     enter: { opacity: 1, x: 0 },
     leave: { opacity: 0, x: 500 },
-    config: { duration: 600 },
+    config: { duration: 500 },
   })
 
   return (
@@ -132,9 +120,9 @@ const Home = () => {
           viewState === 'HABITS' ? (
             <animated.div
               style={style}
-              className="min-w-fit gap-4 flex flex-col self-center absolute top-[-120px] left-[-40px]"
+              className="min-w-fit gap-4 flex flex-col self-center absolute top-[-140px] left-[-40px]"
             >
-              <AddHabitForm addHabit={addHabit} />
+              <AddHabit addHabit={addHabit} />
               <HabitTable habits={habits} handleDelete={handleDelete} />
             </animated.div>
           ) : null
@@ -142,7 +130,7 @@ const Home = () => {
 
         <animated.div
           style={{ transform: x.to((x) => `translate3d(${x}px, 0, 0)`) }}
-          className="absolute top-[-200px] right-[-55px]"
+          className="absolute top-[-220px] right-[-55px]"
         >
           <Constellation
             nodeCount={habits.reduce(
@@ -158,37 +146,13 @@ const Home = () => {
           viewState === 'DAILY' ? (
             <animated.div
               style={style}
-              className="cal flex flex-col gap-3 absolute top-[-120px] right-[-75px] w-[414px]"
+              className="cal flex flex-col gap-3 absolute top-[-140px] right-[-75px] w-[414px]"
             >
-              <div className="flex">
-                <DatePicker
-                  date={selectedDate ? selectedDate : todaysDate}
-                  onDateChange={(date) => setSelectedDate(date)}
-                  modifiers={modifiers}
-                  modifiersClassNames={modifiersClassNames}
-                  locale={enGB}
-                >
-                  {({ inputProps, focused }) => (
-                    <div className="flex flex-col">
-                      <label
-                        className="text-zinc-400 text-xs font-semibold pb-2"
-                        htmlFor="selectedDate"
-                      >
-                        Selected Date
-                      </label>
-                      <input
-                        id="selectedDate"
-                        className={
-                          'rounded border border-zinc-700 bg-transparent py-2 px-3 text-base transition-colors placeholder:text-zinc-500 hover:border-zinc-200 focus:border-orange-yellow focus:outline-none' +
-                          (focused ? ' -focused' : '')
-                        }
-                        {...inputProps}
-                      />
-                    </div>
-                  )}
-                </DatePicker>
-              </div>
-              <DailyHabits
+              <DateSelector
+                selectedDate={selectedDate ? selectedDate : todaysDate}
+                setSelectedDate={setSelectedDate}
+              />
+              <WeeklyHabits
                 completedHabitIds={dailyEntry.completedHabitIds}
                 habits={habits}
                 onToggle={toggleDailyHabit}

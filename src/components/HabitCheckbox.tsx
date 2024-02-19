@@ -1,12 +1,12 @@
 import { Habit } from '@/types'
 
-interface HabitProps {
+interface CheckboxProps {
   habit: Habit
   onToggle: (habit: Habit) => void
   checked: boolean
 }
 
-const HabitCheckbox = ({ habit, onToggle, checked = false }: HabitProps) => {
+const HabitCheckbox = ({ habit, onToggle, checked = false }: CheckboxProps) => {
   return (
     <div className="checkbox-wrapper">
       <input

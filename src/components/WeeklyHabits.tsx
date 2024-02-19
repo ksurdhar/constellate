@@ -1,24 +1,24 @@
 import { Habit } from '@/types'
 import HabitCheckbox from './HabitCheckbox'
 
-interface DailyHabitsProps {
+interface WeeklyHabitsProps {
   habits: Habit[]
   completedHabitIds: string[]
   onToggle: (habit: Habit) => void
 }
 
-const DailyHabits = ({
+const WeeklyHabits = ({
   habits,
   completedHabitIds,
   onToggle,
-}: DailyHabitsProps) => {
+}: WeeklyHabitsProps) => {
   return (
     <div className="overflow-x-auto rounded-lg border border-zinc-700">
       <table className="border-collapse w-full select-auto text-left text-zinc-400">
         <thead className="pb-2 text-xs [&>tr]:border-b [&>tr]:border-zinc-700 [&>tr]:bg-transparent [&>tr]:hover:bg-transparent ">
           <tr className="[&.selected]:bg-gray-100 [&.inserting]:bg-transparent hover:bg-gray-100">
             <th className="py-3 px-4 font-extrabold w-[65%]">Habit</th>
-            <th className="py-3 px-4 font-extrabold">Progress</th>
+            <th className="py-3 px-4 font-extrabold">Weekly Progress</th>
           </tr>
         </thead>
         <tbody className="text-sm">
@@ -50,4 +50,4 @@ const DailyHabits = ({
   )
 }
 
-export default DailyHabits
+export default WeeklyHabits
