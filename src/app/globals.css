@@ -155,7 +155,7 @@ body {
 
 .cal .nice-dates-popover {
   box-shadow: none;
-  max-width: 400px;
+  max-width: 420px;
   background-color: #0e1015;
   @apply rounded-lg border border-zinc-700;
 }
