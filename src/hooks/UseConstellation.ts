@@ -1,5 +1,4 @@
 import { Connection, Node } from '@/types'
-import { useEffect, useState } from 'react'
 
 function centerNodesOnCanvas(
   nodes: Node[],
@@ -56,152 +55,148 @@ function adjustContinuingBranchAngle(previousAngle: number): number {
   return previousAngle + angleAdjustment
 }
 
-const useConstellation = (nodeCount: number, width: number, height: number) => {
-  const [nodes, setNodes] = useState<Node[]>([])
-  const [connections, setConnections] = useState<Connection[]>([])
+const generateConstellation = (
+  nodeCount: number,
+  width: number,
+  height: number
+) => {
+  const maxPrimaryNodes = 14
+  const primaryPercentage = 0.55
 
-  useEffect(() => {
-    const maxPrimaryNodes = 14
-    const primaryPercentage = 0.55
+  const primaryNodeCount = Math.ceil(
+    Math.min(nodeCount * primaryPercentage, maxPrimaryNodes)
+  )
 
-    const primaryNodeCount = Math.ceil(
-      Math.min(nodeCount * primaryPercentage, maxPrimaryNodes)
-    )
+  const margin = width * 0.1 // Equal margin
+  const nodeSpacing = (width - 2 * margin) / (primaryNodeCount - 1)
+  let previousY = height / 2 // Center y-axis
 
-    const margin = width * 0.1 // Equal margin
-    const nodeSpacing = (width - 2 * margin) / (primaryNodeCount - 1)
-    let previousY = height / 2 // Center y-axis
+  const primaryNodes: Node[] = []
 
-    const primaryNodes: Node[] = []
+  for (let i = 0; i < primaryNodeCount; i++) {
+    const x = margin + i * nodeSpacing
+    let y
 
-    for (let i = 0; i < primaryNodeCount; i++) {
-      const x = margin + i * nodeSpacing
-      let y
-
-      if (i === 0) {
-        y = previousY // first node
-      } else {
-        // For others calc Y based on prev node's Y and random angle within 70 degrees
-        const angleDelta = (Math.random() - 0.5) * 70
-        // Convert angleDelta to radians and calculate Y change
-        const deltaY = Math.tan((angleDelta * Math.PI) / 180) * nodeSpacing
-        y = Math.max(0, Math.min(height, previousY + deltaY)) // Ensure stays within canvas bounds
-        previousY = y
-      }
-
-      primaryNodes.push({ id: i, x, y, isBranchNode: false })
+    if (i === 0) {
+      y = previousY // first node
+    } else {
+      // For others calc Y based on prev node's Y and random angle within 70 degrees
+      const angleDelta = (Math.random() - 0.5) * 70
+      // Convert angleDelta to radians and calculate Y change
+      const deltaY = Math.tan((angleDelta * Math.PI) / 180) * nodeSpacing
+      y = Math.max(0, Math.min(height, previousY + deltaY)) // Ensure stays within canvas bounds
+      previousY = y
     }
 
-    const primaryConnections: Connection[] = primaryNodes
-      .slice(0, -1)
-      .map((node) => ({
-        source: node.id,
-        target: node.id + 1,
-      }))
+    primaryNodes.push({ id: i, x, y, isBranchNode: false })
+  }
 
-    let secondaryNodes: Node[] = []
-    let allConnections: Connection[] = [...primaryConnections]
+  const primaryConnections: Connection[] = primaryNodes
+    .slice(0, -1)
+    .map((node) => ({
+      source: node.id,
+      target: node.id + 1,
+    }))
 
-    let isBranching = false
-    let branchLength = 0
+  let secondaryNodes: Node[] = []
+  let allConnections: Connection[] = [...primaryConnections]
 
-    // Add branching nodes
-    for (let i = primaryNodeCount; i < nodeCount; i++) {
-      let branchBaseNode: Node
-      let angle: number
+  let isBranching = false
+  let branchLength = 0
 
-      if (!isBranching) {
-        // start a new branch
-        isBranching = true
-        branchLength = 1
+  // Add branching nodes
+  for (let i = primaryNodeCount; i < nodeCount; i++) {
+    let branchBaseNode: Node
+    let angle: number
 
-        do {
-          const randomPrimaryIdx = Math.floor(Math.random() * primaryNodeCount)
-          branchBaseNode = primaryNodes[randomPrimaryIdx]
-        } while (branchBaseNode.branches === true)
+    if (!isBranching) {
+      // start a new branch
+      isBranching = true
+      branchLength = 1
 
-        const direction = Math.random() < 0.5 ? 1 : -1
-        angle = calculateBranchingAngle(direction)
-        branchBaseNode.direction = angle
-        branchBaseNode.branches = true
-      } else {
-        // continue adding to existing branch
-        const lastSecondaryNode = secondaryNodes[secondaryNodes.length - 1]
-        branchBaseNode = lastSecondaryNode
-        angle = adjustContinuingBranchAngle(lastSecondaryNode.direction!)
-        branchLength++
-      }
+      do {
+        const randomPrimaryIdx = Math.floor(Math.random() * primaryNodeCount)
+        branchBaseNode = primaryNodes[randomPrimaryIdx]
+      } while (branchBaseNode.branches === true)
 
-      const { x, y } = calculateNewPoint(
-        branchBaseNode.x,
-        branchBaseNode.y,
-        angle,
-        nodeSpacing
+      const direction = Math.random() < 0.5 ? 1 : -1
+      angle = calculateBranchingAngle(direction)
+      branchBaseNode.direction = angle
+      branchBaseNode.branches = true
+    } else {
+      // continue adding to existing branch
+      const lastSecondaryNode = secondaryNodes[secondaryNodes.length - 1]
+      branchBaseNode = lastSecondaryNode
+      angle = adjustContinuingBranchAngle(lastSecondaryNode.direction!)
+      branchLength++
+    }
+
+    const { x, y } = calculateNewPoint(
+      branchBaseNode.x,
+      branchBaseNode.y,
+      angle,
+      nodeSpacing
+    )
+    const newY = Math.max(0, Math.min(height, y))
+
+    const newBranchNode: Node = {
+      id: i,
+      x,
+      y: newY,
+      direction: angle,
+      isBranchNode: true,
+    }
+    secondaryNodes.push(newBranchNode)
+
+    const connectionSourceId =
+      branchLength === 1
+        ? branchBaseNode.id
+        : secondaryNodes[secondaryNodes.length - 2].id
+    allConnections.push({
+      source: connectionSourceId,
+      target: newBranchNode.id,
+    })
+
+    // chance to form additional connection
+    if (Math.random() < 0.25) {
+      const branchBaseNodeIndex = primaryNodes.findIndex(
+        (node) => node.id === branchBaseNode.id
       )
-      const newY = Math.max(0, Math.min(height, y))
 
-      const newBranchNode: Node = {
-        id: i,
-        x,
-        y: newY,
-        direction: angle,
-        isBranchNode: true,
-      }
-      secondaryNodes.push(newBranchNode)
+      const eligiblePrimaryNodes = primaryNodes.filter((_, idx) => {
+        if (idx === branchBaseNodeIndex) return false // Exclude the current base node itself
 
-      const connectionSourceId =
-        branchLength === 1
-          ? branchBaseNode.id
-          : secondaryNodes[secondaryNodes.length - 2].id
-      allConnections.push({
-        source: connectionSourceId,
-        target: newBranchNode.id,
+        const minIndex = Math.max(0, branchBaseNodeIndex - branchLength - 1)
+        const maxIndex = branchBaseNodeIndex - 1 // ensure we're looking back from the current base node
+
+        return idx >= minIndex && idx <= maxIndex
       })
 
-      // chance to form additional connection
-      if (Math.random() < 0.25) {
-        const branchBaseNodeIndex = primaryNodes.findIndex(
-          (node) => node.id === branchBaseNode.id
+      if (eligiblePrimaryNodes.length > 0) {
+        const randomTargetIdx = Math.floor(
+          Math.random() * eligiblePrimaryNodes.length
         )
+        const targetNode = eligiblePrimaryNodes[randomTargetIdx]
 
-        const eligiblePrimaryNodes = primaryNodes.filter((_, idx) => {
-          if (idx === branchBaseNodeIndex) return false // Exclude the current base node itself
-
-          const minIndex = Math.max(0, branchBaseNodeIndex - branchLength - 1)
-          const maxIndex = branchBaseNodeIndex - 1 // ensure we're looking back from the current base node
-
-          return idx >= minIndex && idx <= maxIndex
+        // source and target get swapped
+        allConnections.push({
+          target: newBranchNode.id,
+          source: targetNode.id,
         })
-
-        if (eligiblePrimaryNodes.length > 0) {
-          const randomTargetIdx = Math.floor(
-            Math.random() * eligiblePrimaryNodes.length
-          )
-          const targetNode = eligiblePrimaryNodes[randomTargetIdx]
-
-          // source and target get swapped
-          allConnections.push({
-            target: newBranchNode.id,
-            source: targetNode.id,
-          })
-        }
-      }
-
-      // Check if we should end the current branch
-      if (branchLength >= 2 && Math.random() < 0.5) {
-        isBranching = false
       }
     }
 
-    const allNodes = [...primaryNodes, ...secondaryNodes]
+    // Check if we should end the current branch
+    if (branchLength >= 2 && Math.random() < 0.5) {
+      isBranching = false
+    }
+  }
 
-    const centeredNodes = centerNodesOnCanvas(allNodes, width, height)
+  const allNodes = [...primaryNodes, ...secondaryNodes]
 
-    setNodes(centeredNodes)
-    setConnections(allConnections)
-  }, [nodeCount, width, height])
+  const centeredNodes = centerNodesOnCanvas(allNodes, width, height)
 
-  return { nodes, connections }
+  return { nodes: centeredNodes, connections: allConnections }
 }
 
-export default useConstellation
+export default generateConstellation

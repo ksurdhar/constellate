@@ -5,8 +5,9 @@ import Constellation from '@/components/Constellation/Constellation'
 import DateSelector from '@/components/DateSelector'
 import HabitTable from '@/components/HabitTable'
 import WeeklyHabits from '@/components/WeeklyHabits'
-import { Habit } from '@/types'
-import { format, isSameWeek } from 'date-fns'
+import { default as generateConstellation } from '@/hooks/UseConstellation'
+import { Connection, Habit, Node } from '@/types'
+import { format, isSameWeek, startOfWeek } from 'date-fns'
 import { useEffect, useState } from 'react'
 import { animated, useSpring, useTransition } from 'react-spring'
 
@@ -25,6 +26,11 @@ console.error = (...args) => {
 
 const normalizedDateString = (date: Date) => {
   return format(date, 'yyyy-MM-dd')
+}
+
+const getWeekKey = (date: Date): string => {
+  const start = startOfWeek(date, { weekStartsOn: 1 })
+  return format(start, 'yyyy-MM-dd')
 }
 
 const getCompletedHabitsForWeek = (
@@ -47,7 +53,14 @@ interface Entry {
   completedHabitIds: string[]
 }
 
+interface ConstellationData {
+  nodes: Node[]
+  connections: Connection[]
+}
+
 type Entries = { [key: string]: Entry }
+
+type Constellations = { [key: string]: ConstellationData }
 
 const Home = () => {
   const [habits, setHabits] = useState<Habit[]>([
@@ -75,9 +88,35 @@ const Home = () => {
 
   const todaysDate = new Date()
   const [selectedDate, setSelectedDate] = useState<Date | null>(todaysDate)
+
   const [entries, setEntries] = useState<Entries>({
     [normalizedDateString(todaysDate)]: { completedHabitIds: [] },
   })
+
+  const nodeCount = habits.reduce(
+    (acc, habit) => acc + habit.frequencyPerWeek,
+    0
+  )
+
+  const [constellations, setConstellations] = useState<Constellations>({
+    [getWeekKey(todaysDate)]: generateConstellation(nodeCount, 550, 400),
+  })
+
+  useEffect(() => {
+    const weekKey = getWeekKey(selectedDate || new Date())
+
+    if (!constellations[weekKey]) {
+      const { nodes, connections } = generateConstellation(nodeCount, 550, 400)
+      setConstellations((prev) => ({
+        ...prev,
+        [weekKey]: { nodes, connections },
+      }))
+    }
+  }, [selectedDate, constellations, nodeCount])
+
+  const weeklyConstellation = constellations[
+    getWeekKey(selectedDate || todaysDate)
+  ] || { nodes: [], connections: [] }
 
   const dailyEntry =
     selectedDate && entries[normalizedDateString(selectedDate)]
@@ -98,7 +137,6 @@ const Home = () => {
       ...entries,
       [normalizedDateString(selectedDate)]: dailyEntry,
     })
-    console.log(entries)
   }
 
   const [view, setView] = useState<'HABITS' | 'DAILY'>('DAILY')
@@ -116,7 +154,7 @@ const Home = () => {
   })
 
   const { x } = useSpring({
-    x: isFirstMount ? 0 : view === 'HABITS' ? 0 : -500,
+    x: isFirstMount ? 0 : view === 'HABITS' ? 0 : -500, // need to adjust for daily
     config: { duration: 500 },
     from: { x: 0 },
   })
@@ -150,6 +188,8 @@ const Home = () => {
           className="absolute top-[-220px] right-[-55px]"
         >
           <Constellation
+            nodes={weeklyConstellation.nodes}
+            connections={weeklyConstellation.connections}
             nodeCount={habits.reduce(
               (acc, habit) => acc + habit.frequencyPerWeek,
               0

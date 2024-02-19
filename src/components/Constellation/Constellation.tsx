@@ -1,12 +1,16 @@
-import useConstellation from '@/hooks/UseConstellation'
+'use client'
+
 import { FaCaretRight } from 'react-icons/fa6'
 
+import { Connection, Node } from '@/types'
 import React, { useEffect, useState } from 'react'
 import ActiveLine from './ActiveLine'
 import InactiveLine from './InactiveLine'
 import StarNode from './StarNode'
 
 interface ConstellationProps {
+  nodes: Node[]
+  connections: Connection[]
   nodeCount: number
   width: number
   height: number
@@ -15,22 +19,36 @@ interface ConstellationProps {
 }
 
 const Constellation: React.FC<ConstellationProps> = ({
+  nodes,
+  connections,
   nodeCount,
   width,
   height,
   completedHabits,
   toggleView,
 }) => {
-  const { nodes, connections } = useConstellation(nodeCount, width, height)
-
   const [activeNodeIndex, setActiveNodeIndex] = useState(completedHabits)
   const [activeConnectionIndex, setActiveConnectionIndex] = useState(-1)
   const [isHovered, setIsHovered] = useState(false)
+  const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
     setActiveNodeIndex(completedHabits)
     setActiveConnectionIndex(completedHabits - 2)
   }, [completedHabits])
+
+  useEffect(() => {
+    // hack to prevent nextjs from complaining
+    const timer = setTimeout(() => {
+      setIsLoaded(true)
+    }, 0)
+
+    return () => clearTimeout(timer)
+  }, [])
+
+  if (!isLoaded) {
+    return null
+  }
 
   if (nodeCount === 0) {
     return (
