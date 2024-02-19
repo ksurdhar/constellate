@@ -32,7 +32,7 @@ const HabitTable = ({ habits, handleDelete }: HabitTableProps) => {
             </tr>
           ))}
           {habits.length === 0 && (
-            <tr className="hover:bg-white/50">
+            <tr className="hover:bg-white/5 hover:text-zinc-200">
               <td colSpan={2} className="py-3 px-4 text-zinc-500 text-center">
                 Empty
               </td>

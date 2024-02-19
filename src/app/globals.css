@@ -39,20 +39,10 @@ body {
   }
 }
 
-.cal .nice-dates-day {
-  color: #999;
-}
-.cal .nice-dates-day.-outside {
-  color: #333;
-}
-.cal .nice-dates-navigation {
-  @apply text-slate-200;
-}
-
-.checkbox-wrapper-4 * {
+.checkbox-wrapper * {
   box-sizing: border-box;
 }
-.checkbox-wrapper-4 .cbx {
+.checkbox-wrapper .cbx {
   -webkit-user-select: none;
   user-select: none;
   cursor: pointer;
@@ -62,18 +52,18 @@ body {
   transition: all 0.2s ease;
   display: inline-block;
 }
-.checkbox-wrapper-4 .cbx:not(:last-child) {
+.checkbox-wrapper .cbx:not(:last-child) {
   margin-right: 6px;
 }
-.checkbox-wrapper-4 .cbx:hover {
+.checkbox-wrapper .cbx:hover {
   background: rgba(0, 119, 255, 0.16);
 }
-.checkbox-wrapper-4 .cbx span {
+.checkbox-wrapper .cbx span {
   float: left;
   vertical-align: middle;
   transform: translate3d(0, 0, 0);
 }
-.checkbox-wrapper-4 .cbx span:first-child {
+.checkbox-wrapper .cbx span:first-child {
   position: relative;
   width: 18px;
   height: 18px;
@@ -83,7 +73,7 @@ body {
   transition: all 0.2s ease;
   box-shadow: 0 1px 1px rgba(0, 16, 75, 0.05);
 }
-.checkbox-wrapper-4 .cbx span:first-child svg {
+.checkbox-wrapper .cbx span:first-child svg {
   position: absolute;
   top: 3px;
   left: 2px;
@@ -98,26 +88,28 @@ body {
   transition-delay: 0.1s;
   transform: translate3d(0, 0, 0);
 }
-.checkbox-wrapper-4 .cbx span:last-child {
+.checkbox-wrapper .cbx span:last-child {
   padding-left: 8px;
   line-height: 18px;
 }
-.checkbox-wrapper-4 .cbx:hover span:first-child {
+.checkbox-wrapper .cbx:hover span:first-child {
   border-color: #07f;
+  /* @apply border-orange-yellow; */
 }
-.checkbox-wrapper-4 .inp-cbx {
+.checkbox-wrapper .inp-cbx {
   position: absolute;
   visibility: hidden;
 }
-.checkbox-wrapper-4 .inp-cbx:checked + .cbx span:first-child {
+.checkbox-wrapper .inp-cbx:checked + .cbx span:first-child {
   background: #07f;
   border-color: #07f;
+  /* @apply bg-orange-yellow border-orange-yellow; */
   animation: wave-4 0.4s ease;
 }
-.checkbox-wrapper-4 .inp-cbx:checked + .cbx span:first-child svg {
+.checkbox-wrapper .inp-cbx:checked + .cbx span:first-child svg {
   stroke-dashoffset: 0;
 }
-.checkbox-wrapper-4 .inline-svg {
+.checkbox-wrapper .inline-svg {
   position: absolute;
   width: 0;
   height: 0;
@@ -125,7 +117,7 @@ body {
   user-select: none;
 }
 @media screen and (max-width: 640px) {
-  .checkbox-wrapper-4 .cbx {
+  .checkbox-wrapper .cbx {
     width: 100%;
     display: inline-block;
   }
@@ -149,4 +141,25 @@ body {
   50% {
     transform: scale(0.9);
   }
+}
+
+.cal .nice-dates-day {
+  color: #999;
+}
+.cal .nice-dates-day.-outside {
+  color: #333;
+}
+.cal .nice-dates-navigation {
+  @apply text-slate-200;
+}
+
+.cal .nice-dates-popover {
+  box-shadow: none;
+  max-width: 400px;
+  background-color: #0e1015;
+  @apply rounded-lg border border-zinc-700;
+}
+
+.cal .nice-dates-day.-highlight {
+  color: orange;
 }

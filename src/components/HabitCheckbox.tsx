@@ -8,7 +8,7 @@ interface HabitProps {
 
 const HabitCheckbox = ({ habit, onToggle, checked = false }: HabitProps) => {
   return (
-    <div className="checkbox-wrapper-4">
+    <div className="checkbox-wrapper">
       <input
         className="inp-cbx"
         id={habit.name}
@@ -19,13 +19,13 @@ const HabitCheckbox = ({ habit, onToggle, checked = false }: HabitProps) => {
       <label className="cbx" htmlFor={habit.name}>
         <span>
           <svg width="12px" height="10px">
-            <use xlinkHref="#check-4"></use>
+            <use xlinkHref="#check"></use>
           </svg>
         </span>
         <span className="text-zinc-300">{habit.name}</span>
       </label>
       <svg className="inline-svg">
-        <symbol id="check-4" viewBox="0 0 12 10">
+        <symbol id="check" viewBox="0 0 12 10">
           <polyline points="1.5 6 4.5 9 10.5 1"></polyline>
         </symbol>
       </svg>

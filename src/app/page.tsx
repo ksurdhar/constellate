@@ -5,11 +5,10 @@ import Constellation from '@/components/Constellation/Constellation'
 import DailyHabits from '@/components/DailyHabits'
 import HabitTable from '@/components/HabitTable'
 import { Habit } from '@/types'
-import { format } from 'date-fns'
+import { isSameWeek } from 'date-fns'
 import { enGB } from 'date-fns/locale'
 import { useEffect, useState } from 'react'
-import { DatePickerCalendar } from 'react-nice-dates'
-import 'react-nice-dates/build/style.css'
+import { DatePicker } from 'react-nice-dates'
 import { animated, useSpring, useTransition } from 'react-spring'
 
 interface Entry {
@@ -64,6 +63,16 @@ const Home = () => {
   const [entries, setEntries] = useState<Entries>({
     [normalizeDate(todaysDate)]: { completedHabitIds: [] },
   })
+
+  const modifiers = {
+    highlight: (date: Date) =>
+      isSameWeek(date, selectedDate ? selectedDate : todaysDate, {
+        weekStartsOn: 1,
+      }),
+  }
+  const modifiersClassNames = {
+    highlight: '-highlight',
+  }
 
   // get entries for current week
 
@@ -123,7 +132,7 @@ const Home = () => {
           viewState === 'HABITS' ? (
             <animated.div
               style={style}
-              className="min-w-fit flex-1 gap-4 flex flex-col self-center absolute top-[-120px] left-[-40px]"
+              className="min-w-fit gap-4 flex flex-col self-center absolute top-[-120px] left-[-40px]"
             >
               <AddHabitForm addHabit={addHabit} />
               <HabitTable habits={habits} handleDelete={handleDelete} />
@@ -133,7 +142,7 @@ const Home = () => {
 
         <animated.div
           style={{ transform: x.to((x) => `translate3d(${x}px, 0, 0)`) }}
-          className="flex-1 absolute top-[-200px] right-[-55px]"
+          className="absolute top-[-200px] right-[-55px]"
         >
           <Constellation
             nodeCount={habits.reduce(
@@ -149,29 +158,41 @@ const Home = () => {
           viewState === 'DAILY' ? (
             <animated.div
               style={style}
-              className="cal flex-1 absolute top-[-200px] right-[-80px] w-[550px] h-[600px]"
+              className="cal flex flex-col gap-3 absolute top-[-120px] right-[-75px] w-[414px]"
             >
-              <p>
-                Selected date:{' '}
-                {selectedDate
-                  ? format(selectedDate, 'dd MMM yyyy', { locale: enGB })
-                  : 'none'}
-                .
-              </p>
-              <div className="flex gap-3">
-                <div className="flex-[2] h-96">
-                  <DatePickerCalendar
-                    date={selectedDate ? selectedDate : todaysDate}
-                    onDateChange={(date) => setSelectedDate(date)}
-                    locale={enGB}
-                  />
-                </div>
-                <DailyHabits
-                  completedHabitIds={dailyEntry.completedHabitIds}
-                  habits={habits}
-                  onToggle={toggleDailyHabit}
-                />
+              <div className="flex">
+                <DatePicker
+                  date={selectedDate ? selectedDate : todaysDate}
+                  onDateChange={(date) => setSelectedDate(date)}
+                  modifiers={modifiers}
+                  modifiersClassNames={modifiersClassNames}
+                  locale={enGB}
+                >
+                  {({ inputProps, focused }) => (
+                    <div className="flex flex-col">
+                      <label
+                        className="text-zinc-400 text-xs font-semibold pb-2"
+                        htmlFor="selectedDate"
+                      >
+                        Selected Date
+                      </label>
+                      <input
+                        id="selectedDate"
+                        className={
+                          'rounded border border-zinc-700 bg-transparent py-2 px-3 text-base transition-colors placeholder:text-zinc-500 hover:border-zinc-200 focus:border-orange-yellow focus:outline-none' +
+                          (focused ? ' -focused' : '')
+                        }
+                        {...inputProps}
+                      />
+                    </div>
+                  )}
+                </DatePicker>
               </div>
+              <DailyHabits
+                completedHabitIds={dailyEntry.completedHabitIds}
+                habits={habits}
+                onToggle={toggleDailyHabit}
+              />
             </animated.div>
           ) : null
         )}
