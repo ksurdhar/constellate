@@ -21,7 +21,7 @@ const DateSelector = ({ selectedDate, setSelectedDate }: SelectorProps) => {
   }
 
   return (
-    <div className="flex gap-3">
+    <div className="flex gap-2">
       <button
         aria-label="Previous Day"
         onClick={() => {

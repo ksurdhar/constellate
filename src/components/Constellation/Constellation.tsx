@@ -1,7 +1,7 @@
 import useConstellation from '@/hooks/UseConstellation'
 import { FaCaretRight } from 'react-icons/fa6'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import ActiveLine from './ActiveLine'
 import InactiveLine from './InactiveLine'
 import StarNode from './StarNode'
@@ -10,6 +10,7 @@ interface ConstellationProps {
   nodeCount: number
   width: number
   height: number
+  completedHabits: number
   toggleView: () => void
 }
 
@@ -17,25 +18,19 @@ const Constellation: React.FC<ConstellationProps> = ({
   nodeCount,
   width,
   height,
+  completedHabits,
   toggleView,
 }) => {
   const { nodes, connections } = useConstellation(nodeCount, width, height)
 
-  const [activeNodeIndex, setActiveNodeIndex] = useState(0)
+  const [activeNodeIndex, setActiveNodeIndex] = useState(completedHabits)
   const [activeConnectionIndex, setActiveConnectionIndex] = useState(-1)
   const [isHovered, setIsHovered] = useState(false)
 
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     if (activeConnectionIndex < activeNodeIndex - 1) {
-  //       setActiveConnectionIndex(activeNodeIndex - 1)
-  //     } else if (activeNodeIndex < nodes.length) {
-  //       setActiveNodeIndex(activeNodeIndex + 1)
-  //     }
-  //   }, 800)
-
-  //   return () => clearInterval(interval)
-  // }, [nodes.length, activeNodeIndex, activeConnectionIndex])
+  useEffect(() => {
+    setActiveNodeIndex(completedHabits)
+    setActiveConnectionIndex(completedHabits - 2)
+  }, [completedHabits])
 
   if (nodeCount === 0) {
     return (

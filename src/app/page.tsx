@@ -6,6 +6,7 @@ import DateSelector from '@/components/DateSelector'
 import HabitTable from '@/components/HabitTable'
 import WeeklyHabits from '@/components/WeeklyHabits'
 import { Habit } from '@/types'
+import { format, isSameWeek } from 'date-fns'
 import { useEffect, useState } from 'react'
 import { animated, useSpring, useTransition } from 'react-spring'
 
@@ -22,8 +23,24 @@ console.error = (...args) => {
   originalWarn(...args)
 }
 
-const normalizeDate = (date: Date) => {
-  return date.toISOString().slice(0, 10)
+const normalizedDateString = (date: Date) => {
+  return format(date, 'yyyy-MM-dd')
+}
+
+const getCompletedHabitsCountForWeek = (
+  entries: Entries,
+  selectedDate: Date | null
+): number => {
+  if (!selectedDate) return 0
+
+  return Object.keys(entries)
+    .filter((key) => {
+      return isSameWeek(key, normalizedDateString(selectedDate))
+    })
+    .reduce((total, key) => {
+      const entry = entries[key]
+      return total + entry.completedHabitIds.length
+    }, 0)
 }
 
 interface Entry {
@@ -59,14 +76,12 @@ const Home = () => {
   const todaysDate = new Date()
   const [selectedDate, setSelectedDate] = useState<Date | null>(todaysDate)
   const [entries, setEntries] = useState<Entries>({
-    [normalizeDate(todaysDate)]: { completedHabitIds: [] },
+    [normalizedDateString(todaysDate)]: { completedHabitIds: [] },
   })
 
-  // get entries for current week
-
   const dailyEntry =
-    selectedDate && entries[normalizeDate(selectedDate)]
-      ? entries[normalizeDate(selectedDate)]
+    selectedDate && entries[normalizedDateString(selectedDate)]
+      ? entries[normalizedDateString(selectedDate)]
       : { completedHabitIds: [] }
 
   const toggleDailyHabit = (habit: Habit) => {
@@ -81,7 +96,7 @@ const Home = () => {
     }
     setEntries({
       ...entries,
-      [normalizeDate(selectedDate)]: dailyEntry,
+      [normalizedDateString(selectedDate)]: dailyEntry,
     })
     console.log(entries)
   }
@@ -139,6 +154,10 @@ const Home = () => {
             )}
             width={550}
             height={400}
+            completedHabits={getCompletedHabitsCountForWeek(
+              entries,
+              selectedDate
+            )}
             toggleView={() => setView(view === 'HABITS' ? 'DAILY' : 'HABITS')}
           />
         </animated.div>

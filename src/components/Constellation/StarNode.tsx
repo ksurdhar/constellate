@@ -61,8 +61,8 @@ const StarNode: React.FC<StarNodeProps> = ({
 
   useEffect(() => {
     const toggleHalo = () => {
-      setShowHalo(true)
-      setTimeout(() => setShowHalo(false), 1000)
+      setTimeout(() => setShowHalo(true), 800)
+      setTimeout(() => setShowHalo(false), 2000)
     }
 
     if (isActive) {
@@ -70,7 +70,7 @@ const StarNode: React.FC<StarNodeProps> = ({
 
       const interval = window.setInterval(() => {
         toggleHalo()
-      }, 4000)
+      }, 8000)
 
       return () => clearInterval(interval)
     }
@@ -85,7 +85,6 @@ const StarNode: React.FC<StarNodeProps> = ({
   const fadeStyles = useSpring({
     from: { opacity: 0 },
     to: { opacity: 1 },
-    reset: true,
     config: { duration: 2000 },
   })
 
