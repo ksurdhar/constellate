@@ -3,7 +3,7 @@
 import { FaCaretRight } from 'react-icons/fa6'
 
 import { Connection, Node } from '@/types'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import ActiveLine from './ActiveLine'
 import InactiveLine from './InactiveLine'
 import StarNode from './StarNode'
@@ -27,18 +27,41 @@ const Constellation: React.FC<ConstellationProps> = ({
   completedHabits,
   toggleView,
 }) => {
-  const [activeNodeIndex, setActiveNodeIndex] = useState(completedHabits)
+  const [activeNodeIndex, setActiveNodeIndex] = useState(0)
   const [activeConnectionIndex, setActiveConnectionIndex] = useState(-1)
   const [isHovered, setIsHovered] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
 
-  useEffect(() => {
-    setActiveNodeIndex(completedHabits)
-    setActiveConnectionIndex(completedHabits - 2)
-  }, [completedHabits])
+  const prevCompletedHabits = useRef<number>(0)
 
   useEffect(() => {
-    // hack to prevent nextjs from complaining
+    let i = activeNodeIndex
+
+    const drawActiveLine = () => {
+      // incrementally adds nodes + connections for a nice animated effect
+      if (i <= completedHabits && completedHabits) {
+        setActiveNodeIndex(i)
+        setActiveConnectionIndex(i - 2)
+        i++
+        if (completedHabits - prevCompletedHabits.current > 1) {
+          setTimeout(drawActiveLine, 300)
+        } else {
+          prevCompletedHabits.current = completedHabits
+          drawActiveLine()
+        }
+      }
+      // immedately removes nodes + connections
+      if (i > completedHabits) {
+        setActiveNodeIndex(completedHabits)
+        setActiveConnectionIndex(completedHabits - 2)
+        prevCompletedHabits.current = completedHabits
+      }
+    }
+    drawActiveLine()
+  }, [completedHabits, activeNodeIndex])
+
+  useEffect(() => {
+    // hack to prevent nextjs from complaining about SSR
     const timer = setTimeout(() => {
       setIsLoaded(true)
     }, 0)
@@ -56,7 +79,7 @@ const Constellation: React.FC<ConstellationProps> = ({
         style={{ height, width }}
         className="self-center text-center flex justify-around flex-col text-zinc-500"
       >
-        Add weekly habits to form a constellation.
+        Add habits to begin forming a constellation.
       </div>
     )
   }
@@ -81,7 +104,6 @@ const Constellation: React.FC<ConstellationProps> = ({
           const sourceNode = nodes.find((n) => n.id === connection.source)
           const targetNode = nodes.find((n) => n.id === connection.target)
 
-          // If either node is not found, do not render the line
           if (!sourceNode || !targetNode) return null
 
           return (

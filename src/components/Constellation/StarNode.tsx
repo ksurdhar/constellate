@@ -93,7 +93,7 @@ const StarNode: React.FC<StarNodeProps> = ({
   const fillStyles = useSpring({
     fill: isActive ? color : 'rgba(12, 14, 18, 0.99)',
     stroke: isActive ? color : 'white',
-    config: { duration: 800 },
+    config: { duration: 500 },
   })
 
   return transitions((style, item) =>
