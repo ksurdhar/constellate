@@ -6,7 +6,13 @@ import DateSelector from '@/components/DateSelector'
 import HabitTable from '@/components/HabitTable'
 import WeeklyHabits from '@/components/WeeklyHabits'
 import { default as generateConstellation } from '@/hooks/UseConstellation'
-import { Connection, Habit, Node } from '@/types'
+import {
+  ConstellationData,
+  Constellations,
+  Entries,
+  Entry,
+  Habit,
+} from '@/types'
 import { format, isSameWeek, startOfWeek } from 'date-fns'
 import { useEffect, useState } from 'react'
 import { animated, useSpring, useTransition } from 'react-spring'
@@ -49,19 +55,6 @@ const getCompletedHabitsForWeek = (
     }, [])
 }
 
-interface Entry {
-  completedHabitIds: string[]
-}
-
-interface ConstellationData {
-  nodes: Node[]
-  connections: Connection[]
-}
-
-type Entries = { [key: string]: Entry }
-
-type Constellations = { [key: string]: ConstellationData }
-
 const Home = () => {
   const [habits, setHabits] = useState<Habit[]>([
     { id: '1', name: 'Exercise', frequencyPerWeek: 3 },
@@ -98,46 +91,47 @@ const Home = () => {
     0
   )
 
+  const defaultConstellation = generateConstellation(nodeCount, 550, 400)
   const [constellations, setConstellations] = useState<Constellations>({
-    [getWeekKey(todaysDate)]: generateConstellation(nodeCount, 550, 400),
+    [getWeekKey(todaysDate)]: defaultConstellation,
   })
 
-  useEffect(() => {
-    const weekKey = getWeekKey(selectedDate || new Date())
+  const [weeklyConstellation, setWeeklyConstellation] =
+    useState<ConstellationData>(defaultConstellation)
+
+  const [isLoading, setIsLoading] = useState(false)
+
+  // potentially generates new constellations and updates weekly constellation
+  const updateDate = (date: Date | null) => {
+    setSelectedDate(date)
+
+    const weekKey = getWeekKey(date || new Date())
 
     if (!constellations[weekKey]) {
       const { nodes, connections } = generateConstellation(nodeCount, 550, 400)
-      setConstellations((prev) => ({
-        ...prev,
+      setConstellations({
+        ...constellations,
         [weekKey]: { nodes, connections },
-      }))
+      })
+      updateWeeklyConstellation({ nodes, connections })
+    } else if (weeklyConstellation !== constellations[weekKey]) {
+      updateWeeklyConstellation(constellations[weekKey])
     }
-  }, [selectedDate, constellations, nodeCount])
+  }
 
-  const weeklyConstellation = constellations[
-    getWeekKey(selectedDate || todaysDate)
-  ] || { nodes: [], connections: [] }
+  // sets a loading state for the weekly constellation
+  const updateWeeklyConstellation = (newConstellation: ConstellationData) => {
+    setIsLoading(true)
+    setTimeout(() => {
+      setWeeklyConstellation(newConstellation)
+      setTimeout(() => setIsLoading(false), 800)
+    }, 100)
+  }
 
   const dailyEntry =
     selectedDate && entries[normalizedDateString(selectedDate)]
       ? entries[normalizedDateString(selectedDate)]
       : { completedHabitIds: [] }
-
-  const toggleDailyHabit = (habit: Habit) => {
-    if (!selectedDate) return
-
-    if (dailyEntry.completedHabitIds.includes(habit.id)) {
-      dailyEntry.completedHabitIds = dailyEntry.completedHabitIds.filter(
-        (id) => id !== habit.id
-      )
-    } else {
-      dailyEntry.completedHabitIds.push(habit.id)
-    }
-    setEntries({
-      ...entries,
-      [normalizedDateString(selectedDate)]: dailyEntry,
-    })
-  }
 
   const [view, setView] = useState<'HABITS' | 'DAILY'>('DAILY')
   const [isFirstMount, setIsFirstMount] = useState(true)
@@ -187,6 +181,11 @@ const Home = () => {
           style={{ transform: x.to((x) => `translate3d(${x}px, 0, 0)`) }}
           className="absolute top-[-220px] right-[-55px]"
         >
+          {isLoading && (
+            <div className="absolute inset-0 flex justify-center items-center bg-[#0e1015] z-10">
+              <p className="text-zinc-400">Loading</p>
+            </div>
+          )}
           <Constellation
             nodes={weeklyConstellation.nodes}
             connections={weeklyConstellation.connections}
@@ -208,13 +207,19 @@ const Home = () => {
             >
               <DateSelector
                 selectedDate={selectedDate ? selectedDate : todaysDate}
-                setSelectedDate={setSelectedDate}
+                setSelectedDate={updateDate}
               />
               <WeeklyHabits
-                dailyCompletedHabits={dailyEntry.completedHabitIds}
+                dailyEntry={dailyEntry}
                 weeklyCompletedHabits={completedWeeklyHabits}
                 habits={habits}
-                onToggle={toggleDailyHabit}
+                updateEntry={(updatedEntry: Entry) => {
+                  if (!selectedDate) return
+                  setEntries({
+                    ...entries,
+                    [normalizedDateString(selectedDate)]: updatedEntry,
+                  })
+                }}
               />
             </animated.div>
           ) : null

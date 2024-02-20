@@ -1,19 +1,30 @@
-import { Habit } from '@/types'
+import { Entry, Habit } from '@/types'
 import HabitCheckbox from './HabitCheckbox'
 
 interface WeeklyHabitsProps {
+  dailyEntry: Entry
   habits: Habit[]
-  dailyCompletedHabits: string[]
   weeklyCompletedHabits: string[]
-  onToggle: (habit: Habit) => void
+  updateEntry: (dailyEntry: Entry) => void
 }
 
 const WeeklyHabits = ({
+  dailyEntry,
   habits,
-  dailyCompletedHabits,
   weeklyCompletedHabits,
-  onToggle,
+  updateEntry,
 }: WeeklyHabitsProps) => {
+  const toggleDailyHabit = (habit: Habit) => {
+    if (dailyEntry.completedHabitIds.includes(habit.id)) {
+      dailyEntry.completedHabitIds = dailyEntry.completedHabitIds.filter(
+        (id) => id !== habit.id
+      )
+    } else {
+      dailyEntry.completedHabitIds.push(habit.id)
+    }
+    updateEntry(dailyEntry)
+  }
+
   return (
     <div className="overflow-x-auto rounded-lg border border-zinc-700">
       <table className="border-collapse w-full select-auto text-left text-zinc-400">
@@ -43,8 +54,8 @@ const WeeklyHabits = ({
                 <td className="py-1 px-4">
                   <HabitCheckbox
                     habit={habit}
-                    checked={dailyCompletedHabits.includes(habit.id)}
-                    onToggle={onToggle}
+                    checked={dailyEntry.completedHabitIds.includes(habit.id)}
+                    onToggle={() => toggleDailyHabit(habit)}
                     disabled={weeklyHabitCount === habit.frequencyPerWeek}
                   />
                 </td>
