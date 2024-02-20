@@ -48,19 +48,17 @@ const InactiveLine: React.FC<InactiveLineProps> = ({ x1, y1, x2, y2 }) => {
     from: { opacity: 0 },
     to: { opacity: 1 },
     reset: true,
-    config: { duration: 2000 },
+    config: { duration: 1000 },
   })
 
   return (
-    <svg style={{ width: '100%', height: '100%', overflow: 'visible' }}>
-      <animated.line
-        {...commonProps}
-        stroke="white"
-        strokeWidth="1"
-        strokeDasharray={strokeDasharray}
-        style={{ ...inactiveStyles, ...fadeStyles }}
-      />
-    </svg>
+    <animated.line
+      {...commonProps}
+      stroke="white"
+      strokeWidth="1"
+      strokeDasharray={strokeDasharray}
+      style={{ ...inactiveStyles, ...fadeStyles }}
+    />
   )
 }
 

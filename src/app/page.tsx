@@ -113,19 +113,10 @@ const Home = () => {
         ...constellations,
         [weekKey]: { nodes, connections },
       })
-      updateWeeklyConstellation({ nodes, connections })
+      setWeeklyConstellation({ nodes, connections })
     } else if (weeklyConstellation !== constellations[weekKey]) {
-      updateWeeklyConstellation(constellations[weekKey])
+      setWeeklyConstellation(constellations[weekKey])
     }
-  }
-
-  // sets a loading state for the weekly constellation
-  const updateWeeklyConstellation = (newConstellation: ConstellationData) => {
-    setIsLoading(true)
-    setTimeout(() => {
-      setWeeklyConstellation(newConstellation)
-      setTimeout(() => setIsLoading(false), 800)
-    }, 100)
   }
 
   const dailyEntry =
@@ -181,11 +172,6 @@ const Home = () => {
           style={{ transform: x.to((x) => `translate3d(${x}px, 0, 0)`) }}
           className="absolute top-[-220px] right-[-55px]"
         >
-          {isLoading && (
-            <div className="absolute inset-0 flex justify-center items-center bg-[#0e1015] z-10">
-              <p className="text-zinc-400">Loading</p>
-            </div>
-          )}
           <Constellation
             nodes={weeklyConstellation.nodes}
             connections={weeklyConstellation.connections}

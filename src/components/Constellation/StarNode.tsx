@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { animated, config, useSpring } from 'react-spring'
+import { animated, config, useSpring, useTransition } from 'react-spring'
 
 interface HaloProps {
   cx: number
@@ -60,27 +60,35 @@ const StarNode: React.FC<StarNodeProps> = ({
   const [showHalo, setShowHalo] = useState(false)
 
   useEffect(() => {
+    let haloTimeout: number
+    let interval: number
+    let showHaloTimeout: number
+
     const toggleHalo = () => {
-      setTimeout(() => setShowHalo(true), 800)
-      setTimeout(() => setShowHalo(false), 2000)
+      showHaloTimeout = window.setTimeout(() => setShowHalo(true), 550)
+      if (haloTimeout) clearTimeout(haloTimeout)
+      haloTimeout = window.setTimeout(() => setShowHalo(false), 1200)
     }
 
     if (isActive) {
       toggleHalo()
+      interval = window.setInterval(toggleHalo, 8000)
+    }
 
-      const interval = window.setInterval(() => {
-        toggleHalo()
-      }, 8000)
-
-      return () => clearInterval(interval)
+    return () => {
+      if (haloTimeout) clearTimeout(haloTimeout)
+      if (interval) clearInterval(interval)
+      if (showHaloTimeout) clearTimeout(showHaloTimeout)
+      setShowHalo(false)
     }
   }, [isActive])
 
-  const [_, forceAnimation] = useState(false)
-
-  useEffect(() => {
-    forceAnimation(true)
-  }, [])
+  const transitions = useTransition(true, {
+    from: { opacity: 0 },
+    enter: { opacity: 1 },
+    leave: { opacity: 0 },
+    config: { duration: 1000 },
+  })
 
   const fillStyles = useSpring({
     fill: isActive ? color : 'rgba(12, 14, 18, 0.99)',
@@ -88,26 +96,21 @@ const StarNode: React.FC<StarNodeProps> = ({
     config: { duration: 800 },
   })
 
-  const fadeStyles = useSpring({
-    from: { opacity: 0 },
-    to: { opacity: 1 },
-    reset: false,
-    config: { duration: 2000 }, // needs adjusting when doing a new constellation
-  })
-
-  return (
-    <>
-      {showHalo && <Halo cx={cx} cy={cy} color={color} showHalo={showHalo} />}
-      <animated.circle
-        cx={cx}
-        cy={cy}
-        r="3"
-        fill={isActive ? color : 'rgba(12, 14, 18, 0.99)'}
-        stroke={isActive ? color : 'white'}
-        strokeWidth="1"
-        style={{ ...fillStyles, ...fadeStyles }}
-      />
-    </>
+  return transitions((style, item) =>
+    item ? (
+      <>
+        {showHalo && <Halo cx={cx} cy={cy} color={color} showHalo={showHalo} />}
+        <animated.circle
+          cx={cx}
+          cy={cy}
+          r="3"
+          style={{ ...style, ...fillStyles }}
+          strokeWidth="1"
+        />
+      </>
+    ) : (
+      ''
+    )
   )
 }
 

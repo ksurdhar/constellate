@@ -85,7 +85,9 @@ const Constellation: React.FC<ConstellationProps> = ({
           if (!sourceNode || !targetNode) return null
 
           return (
-            <React.Fragment key={`${connection.source}-${connection.target}`}>
+            <React.Fragment
+              key={`${sourceNode.x}-${sourceNode.y}-${targetNode.x}-${targetNode.y}`}
+            >
               <InactiveLine
                 x1={sourceNode.x}
                 y1={sourceNode.y}
@@ -104,7 +106,7 @@ const Constellation: React.FC<ConstellationProps> = ({
         })}
         {nodes.map((node, idx) => (
           <StarNode
-            key={node.id}
+            key={`${node.x}-${node.y}`}
             cx={node.x}
             cy={node.y}
             color="gold"

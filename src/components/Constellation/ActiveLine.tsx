@@ -1,5 +1,5 @@
 import React from 'react'
-import { animated, easings, useSpring } from 'react-spring'
+import { animated, useTransition } from 'react-spring'
 
 interface ActiveLineProps {
   x1: number
@@ -16,23 +16,27 @@ const ActiveLine: React.FC<ActiveLineProps> = ({
   y2,
   isActive,
 }) => {
-  const { x, y } = useSpring({
-    from: { x: x1, y: y1 },
-    to: { x: isActive ? x2 : x1, y: isActive ? y2 : y1 },
-    config: { duration: 1100, easing: easings.easeInOutExpo },
+  const transitions = useTransition(isActive, {
+    from: { x: x1, y: y1, opacity: 0 },
+    enter: { x: x2, y: y2, opacity: 1 },
+    leave: { x: x1, y: y1, opacity: 0 },
+    config: { duration: 500 },
   })
 
-  return (
-    <svg style={{ width: '100%', height: '100%', overflow: 'visible' }}>
+  return transitions((style, item) =>
+    item ? (
       <animated.line
         x1={x1}
         y1={y1}
-        x2={x}
-        y2={y}
+        x2={style.x}
+        y2={style.y}
         stroke="gold"
         strokeWidth="2"
+        style={{ opacity: style.opacity }}
       />
-    </svg>
+    ) : (
+      ''
+    )
   )
 }
 
