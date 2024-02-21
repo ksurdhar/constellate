@@ -21,22 +21,7 @@ body {
 }
 
 .bg-soft-black {
-  background-color: rgba(12, 14, 18, 99%);
-}
-
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
-  .link {
-    @apply inline-block text-center no-underline;
-    padding: 0.5rem 1rem;
-    transition: background-color 0.3s ease;
-  }
-  .link:hover,
-  .link:focus {
-    @apply bg-orange-yellow;
-  }
+  background-color: #1a1c1f;
 }
 
 .checkbox-wrapper * {
@@ -156,7 +141,7 @@ body {
 .cal .nice-dates-popover {
   box-shadow: none;
   max-width: 420px;
-  background-color: #0e1015;
+  background-color: #1a1c1f;
   @apply rounded-lg border border-zinc-700;
 }
 

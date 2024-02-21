@@ -1,10 +1,10 @@
 'use client'
 
-import { FaCaretRight } from 'react-icons/fa6'
 import { GrPowerCycle } from 'react-icons/gr'
 
 import { Connection, Node } from '@/types'
 import React, { useEffect, useRef, useState } from 'react'
+import { FaCaretRight } from 'react-icons/fa'
 import ActiveLine from './ActiveLine'
 import InactiveLine from './InactiveLine'
 import StarNode from './StarNode'
@@ -15,6 +15,7 @@ interface ConstellationProps {
   nodeCount: number
   width: number
   height: number
+  view: 'HABITS' | 'DAILY'
   completedHabits: number
   toggleView: () => void
   regenerate: () => void
@@ -28,6 +29,7 @@ const Constellation: React.FC<ConstellationProps> = ({
   height,
   completedHabits,
   toggleView,
+  view,
   regenerate,
 }) => {
   const [activeNodeIndex, setActiveNodeIndex] = useState(0)
@@ -168,7 +170,7 @@ const Constellation: React.FC<ConstellationProps> = ({
           className="text-yellow-400 text-sm rounded-md hover:bg-yellow-400/15 py-1 px-2 flex gap-1 align-middle"
         >
           <FaCaretRight className="self-center text-xl" />
-          Track Habits
+          Go to {view === 'HABITS' ? 'Tracker' : 'Habits'}
         </button>
       </div>
 

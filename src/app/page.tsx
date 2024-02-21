@@ -15,6 +15,10 @@ import {
 } from '@/types'
 import { format, isSameWeek, startOfWeek } from 'date-fns'
 import { useEffect, useState } from 'react'
+import {
+  MdOutlineKeyboardArrowLeft,
+  MdOutlineKeyboardArrowRight,
+} from 'react-icons/md'
 import { animated, useTransition } from 'react-spring'
 
 // REMOVE ONCE ADDRESSED WITH FORK
@@ -196,66 +200,109 @@ const Home = () => {
   const completedWeeklyHabits = getCompletedHabitsForWeek(entries, selectedDate)
 
   return (
-    <div className="bg-soft-black flex min-h-screen flex-col items-center justify-center py-5 text-lg">
-      <div className="w-full max-w-4xl px-4 relative">
-        {leftPanelTransitions((style, viewState) =>
-          viewState === 'HABITS' ? (
-            <animated.div
-              style={style}
-              className="min-w-fit gap-4 flex flex-col self-center absolute top-[-140px] left-[-40px]"
-            >
-              <AddHabit addHabit={addHabit} />
-              <HabitTable habits={habits} handleDelete={handleDelete} />
-            </animated.div>
-          ) : null
-        )}
-
+    <>
+      <nav className="flex flex-col gap-3 m-6 absolute right-0 text-sm font-semibold  text-zinc-500 ">
         <div
-          className={`absolute top-[-220px] transition-all duration-500 ease-linear ${
-            view === 'HABITS' ? 'right-[-80px]' : 'right-[420px]'
-          } `}
+          onClick={() => setView('DAILY')}
+          className={`${
+            view === 'DAILY' ? 'text-yellow-400/75' : ''
+          } cursor-pointer transition-colors hover:text-zinc-200`}
         >
-          <Constellation
-            nodes={weeklyConstellation.nodes}
-            connections={weeklyConstellation.connections}
-            nodeCount={habits.reduce(
-              (acc, habit) => acc + habit.frequencyPerWeek,
-              0
-            )}
-            width={550}
-            height={400}
-            completedHabits={completedWeeklyHabits.length}
-            regenerate={regenerate}
-            toggleView={() => setView(view === 'HABITS' ? 'DAILY' : 'HABITS')}
-          />
+          TRACKER
         </div>
-        {rightPanelTransitions((style, viewState) =>
-          viewState === 'DAILY' ? (
-            <animated.div
-              style={style}
-              className="cal flex flex-col gap-3 absolute top-[-140px] right-[-75px] w-[414px]"
-            >
-              <DateSelector
-                selectedDate={selectedDate ? selectedDate : todaysDate}
-                setSelectedDate={updateDate}
-              />
-              <WeeklyHabits
-                dailyEntry={dailyEntry}
-                weeklyCompletedHabits={completedWeeklyHabits}
-                habits={habits}
-                updateEntry={(updatedEntry: Entry) => {
-                  if (!selectedDate) return
-                  setEntries({
-                    ...entries,
-                    [normalizedDateString(selectedDate)]: updatedEntry,
-                  })
-                }}
-              />
-            </animated.div>
-          ) : null
-        )}
+        <div
+          onClick={() => setView('HABITS')}
+          className={`${
+            view === 'HABITS' ? 'text-yellow-400/75' : ''
+          } cursor-pointer transition-colors hover:text-zinc-200`}
+        >
+          HABITS
+        </div>
+        <div className="cursor-pointer transition-colors hover:text-zinc-200">
+          FAQ
+        </div>
+      </nav>
+      <div className="flex min-h-screen flex-col items-center justify-center py-5 text-lg">
+        <div className="w-full max-w-4xl px-4 relative">
+          {leftPanelTransitions((style, viewState) =>
+            viewState === 'HABITS' ? (
+              <animated.div
+                style={style}
+                className="min-w-fit gap-4 flex flex-col self-center absolute top-[-140px] left-[-40px]"
+              >
+                <AddHabit addHabit={addHabit} />
+                <HabitTable habits={habits} handleDelete={handleDelete} />
+              </animated.div>
+            ) : null
+          )}
+
+          <div
+            className={`absolute top-[-220px] transition-all duration-500 ease-linear ${
+              view === 'HABITS' ? 'right-[-80px]' : 'right-[420px]'
+            } `}
+          >
+            {view === 'DAILY' && (
+              <button
+                title="Go to Habits"
+                onClick={() => setView('HABITS')}
+                className="text-zinc-700 absolute rounded-md hover:bg-zinc-400/15 hover:text-zinc-400 duration-500 transition-colors py-1 px-2 flex gap-1 align-middle text-4xl left-[-130px] top-[50%]"
+              >
+                <MdOutlineKeyboardArrowLeft />
+              </button>
+            )}
+
+            <Constellation
+              nodes={weeklyConstellation.nodes}
+              connections={weeklyConstellation.connections}
+              nodeCount={habits.reduce(
+                (acc, habit) => acc + habit.frequencyPerWeek,
+                0
+              )}
+              width={550}
+              height={400}
+              completedHabits={completedWeeklyHabits.length}
+              regenerate={regenerate}
+              view={view}
+              toggleView={() => setView(view === 'HABITS' ? 'DAILY' : 'HABITS')}
+            />
+            {view === 'HABITS' && (
+              <button
+                onClick={() => setView('DAILY')}
+                title="Go to Tracker"
+                className="text-zinc-700 absolute rounded-md hover:bg-zinc-400/15 hover:text-zinc-400 duration-500 transition-colors py-1 px-2 flex gap-1 align-middle text-4xl right-[-130px] top-[50%]"
+              >
+                <MdOutlineKeyboardArrowRight />
+              </button>
+            )}
+          </div>
+          {rightPanelTransitions((style, viewState) =>
+            viewState === 'DAILY' ? (
+              <animated.div
+                style={style}
+                className="cal flex flex-col gap-3 absolute top-[-140px] right-[-75px] w-[414px]"
+              >
+                <DateSelector
+                  selectedDate={selectedDate ? selectedDate : todaysDate}
+                  setSelectedDate={updateDate}
+                />
+                <WeeklyHabits
+                  dailyEntry={dailyEntry}
+                  weeklyCompletedHabits={completedWeeklyHabits}
+                  habits={habits}
+                  updateEntry={(updatedEntry: Entry) => {
+                    if (!selectedDate) return
+                    setEntries({
+                      ...entries,
+                      [normalizedDateString(selectedDate)]: updatedEntry,
+                    })
+                  }}
+                />
+              </animated.div>
+            ) : null
+          )}
+        </div>
       </div>
-    </div>
+    </>
   )
 }
 
