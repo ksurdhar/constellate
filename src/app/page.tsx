@@ -15,7 +15,7 @@ import {
 } from '@/types'
 import { format, isSameWeek, startOfWeek } from 'date-fns'
 import { useEffect, useState } from 'react'
-import { animated, useSpring, useTransition } from 'react-spring'
+import { animated, useTransition } from 'react-spring'
 
 // REMOVE ONCE ADDRESSED WITH FORK
 const originalWarn = console.error
@@ -186,12 +186,6 @@ const Home = () => {
     config: { duration: 500 },
   })
 
-  const { x } = useSpring({
-    x: isFirstMount ? 0 : view === 'HABITS' ? 0 : -500, // need to adjust for daily
-    config: { duration: 500 },
-    from: { x: 0 },
-  })
-
   const rightPanelTransitions = useTransition(view, {
     from: isFirstMount ? {} : { opacity: 0, x: 500 },
     enter: { opacity: 1, x: 0 },
@@ -216,9 +210,10 @@ const Home = () => {
           ) : null
         )}
 
-        <animated.div
-          style={{ transform: x.to((x) => `translate3d(${x}px, 0, 0)`) }}
-          className="absolute top-[-220px] right-[-55px]"
+        <div
+          className={`absolute top-[-220px] transition-all duration-500 ease-linear ${
+            view === 'HABITS' ? 'right-[-80px]' : 'right-[420px]'
+          } `}
         >
           <Constellation
             nodes={weeklyConstellation.nodes}
@@ -233,7 +228,7 @@ const Home = () => {
             regenerate={regenerate}
             toggleView={() => setView(view === 'HABITS' ? 'DAILY' : 'HABITS')}
           />
-        </animated.div>
+        </div>
         {rightPanelTransitions((style, viewState) =>
           viewState === 'DAILY' ? (
             <animated.div

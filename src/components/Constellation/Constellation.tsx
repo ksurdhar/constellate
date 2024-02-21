@@ -179,9 +179,9 @@ const Constellation: React.FC<ConstellationProps> = ({
       >
         <button
           onClick={regenerate}
-          className="text-zinc-400 absolute text-sm rounded-md hover:bg-zinc-400/15 py-1 px-2 flex gap-1 align-middle"
+          className="text-zinc-600 absolute text-xs rounded-md hover:bg-zinc-400/15 hover:text-zinc-400 transition-colors py-1 px-2 flex gap-1 align-middle"
         >
-          <GrPowerCycle className="self-center text-xl" />
+          <GrPowerCycle className="self-center text-base" />
           REGENERATE
         </button>
       </div>
