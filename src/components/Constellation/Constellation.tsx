@@ -1,6 +1,7 @@
 'use client'
 
 import { FaCaretRight } from 'react-icons/fa6'
+import { GrPowerCycle } from 'react-icons/gr'
 
 import { Connection, Node } from '@/types'
 import React, { useEffect, useRef, useState } from 'react'
@@ -16,6 +17,7 @@ interface ConstellationProps {
   height: number
   completedHabits: number
   toggleView: () => void
+  regenerate: () => void
 }
 
 const Constellation: React.FC<ConstellationProps> = ({
@@ -26,6 +28,7 @@ const Constellation: React.FC<ConstellationProps> = ({
   height,
   completedHabits,
   toggleView,
+  regenerate,
 }) => {
   const [activeNodeIndex, setActiveNodeIndex] = useState(0)
   const [activeConnectionIndex, setActiveConnectionIndex] = useState(-1)
@@ -102,12 +105,7 @@ const Constellation: React.FC<ConstellationProps> = ({
   }
 
   return (
-    <div
-      style={{ width, height }}
-      className="relative"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
+    <div style={{ width, height }} className="relative">
       <svg
         className="transition-opacity duration-500 ease-in-out"
         style={{
@@ -154,6 +152,8 @@ const Constellation: React.FC<ConstellationProps> = ({
         ))}
       </svg>
       <div
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
         className="absolute inset-0 flex justify-center items-center transition-opacity duration-500 ease-in-out cursor-pointer flex-col gap-2"
         style={{ opacity: isHovered ? 1 : 0 }}
       >
@@ -169,6 +169,20 @@ const Constellation: React.FC<ConstellationProps> = ({
         >
           <FaCaretRight className="self-center text-xl" />
           Track Habits
+        </button>
+      </div>
+
+      <div
+        className={`absolute h-[max-content] inset-0 flex cursor-pointer flex-row-reverse hover:opacity-100 transition-opacity duration-500 ${
+          isHovered ? 'opacity-100' : 'opacity-0'
+        }`}
+      >
+        <button
+          onClick={regenerate}
+          className="text-zinc-400 absolute text-sm rounded-md hover:bg-zinc-400/15 py-1 px-2 flex gap-1 align-middle"
+        >
+          <GrPowerCycle className="self-center text-xl" />
+          REGENERATE
         </button>
       </div>
     </div>

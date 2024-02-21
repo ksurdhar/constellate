@@ -126,6 +126,17 @@ const Home = () => {
     }
   }
 
+  const regenerate = () => {
+    const weekKey = getWeekKey(selectedDate || new Date())
+
+    const { nodes, connections } = generateConstellation(nodeCount, 550, 400)
+    setConstellations({
+      ...constellations,
+      [weekKey]: { nodes, connections },
+    })
+    setWeeklyConstellation({ nodes, connections })
+  }
+
   // listens for changes to nodeCount (modifications to habits) and updates constellations
   useEffect(() => {
     const weekKey = getWeekKey(selectedDate || new Date())
@@ -219,6 +230,7 @@ const Home = () => {
             width={550}
             height={400}
             completedHabits={completedWeeklyHabits.length}
+            regenerate={regenerate}
             toggleView={() => setView(view === 'HABITS' ? 'DAILY' : 'HABITS')}
           />
         </animated.div>
