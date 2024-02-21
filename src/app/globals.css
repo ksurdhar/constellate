@@ -52,7 +52,7 @@ body {
   position: relative;
   width: 18px;
   height: 18px;
-  border-radius: 4px;
+  border-radius: 16px;
   transform: scale(1);
   border: 1px solid #cccfdb;
   transition: all 0.2s ease;
@@ -63,7 +63,6 @@ body {
   top: 3px;
   left: 2px;
   fill: none;
-  stroke: #fff;
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -78,7 +77,7 @@ body {
   line-height: 18px;
 }
 .checkbox-wrapper .cbx:hover span:first-child {
-  border-color: #07f;
+  border-color: #3b82f6;
   /* @apply border-orange-yellow; */
 }
 .checkbox-wrapper .inp-cbx {
@@ -86,8 +85,8 @@ body {
   visibility: hidden;
 }
 .checkbox-wrapper .inp-cbx:checked + .cbx span:first-child {
-  background: #07f;
-  border-color: #07f;
+  background: #3b82f6;
+  border-color: #3b82f6;
   /* @apply bg-orange-yellow border-orange-yellow; */
   animation: wave-4 0.4s ease;
 }

@@ -19,7 +19,7 @@ import {
   MdOutlineKeyboardArrowLeft,
   MdOutlineKeyboardArrowRight,
 } from 'react-icons/md'
-import { animated, useTransition } from 'react-spring'
+import { animated, useSpring, useTransition } from 'react-spring'
 
 // REMOVE ONCE ADDRESSED WITH FORK
 const originalWarn = console.error
@@ -178,9 +178,16 @@ const Home = () => {
 
   const [view, setView] = useState<'HABITS' | 'DAILY'>('DAILY')
   const [isFirstMount, setIsFirstMount] = useState(true)
+  const [allowAnimation, setAllowAnimation] = useState(false)
 
   useEffect(() => {
     setIsFirstMount(false)
+
+    const timer = setTimeout(() => {
+      setAllowAnimation(true)
+    }, 1)
+
+    return () => clearTimeout(timer)
   }, [])
 
   const leftPanelTransitions = useTransition(view, {
@@ -188,6 +195,13 @@ const Home = () => {
     enter: { opacity: 1, x: 0 },
     leave: { opacity: 0, x: -500 },
     config: { duration: 500 },
+  })
+
+  const { x } = useSpring({
+    to: { x: isFirstMount ? 0 : view === 'HABITS' ? 0 : -500 }, // need to adjust for daily
+    from: { x: 0 },
+    config: { duration: 500 },
+    immediate: !allowAnimation,
   })
 
   const rightPanelTransitions = useTransition(view, {
@@ -236,21 +250,22 @@ const Home = () => {
             ) : null
           )}
 
-          <div
-            className={`absolute top-[-220px] transition-all duration-500 ease-linear ${
-              view === 'HABITS' ? 'right-[-80px]' : 'right-[420px]'
+          {view === 'DAILY' && (
+            <button
+              title="Go to Habits"
+              onClick={() => setView('HABITS')}
+              className="text-zinc-700 absolute rounded-md hover:bg-zinc-400/15 hover:text-zinc-400 duration-300 transition-colors py-1 px-2 flex gap-1 align-middle text-4xl left-[-130px] top-[50%]"
+            >
+              <MdOutlineKeyboardArrowLeft />
+            </button>
+          )}
+
+          <animated.div
+            style={{ transform: x.to((x) => `translate3d(${x}px, 0, 0)`) }}
+            className={`absolute top-[-220px] ${
+              view === 'HABITS' ? 'right-[-80px]' : 'right-[-90px]'
             } `}
           >
-            {view === 'DAILY' && (
-              <button
-                title="Go to Habits"
-                onClick={() => setView('HABITS')}
-                className="text-zinc-700 absolute rounded-md hover:bg-zinc-400/15 hover:text-zinc-400 duration-500 transition-colors py-1 px-2 flex gap-1 align-middle text-4xl left-[-130px] top-[50%]"
-              >
-                <MdOutlineKeyboardArrowLeft />
-              </button>
-            )}
-
             <Constellation
               nodes={weeklyConstellation.nodes}
               connections={weeklyConstellation.connections}
@@ -265,16 +280,16 @@ const Home = () => {
               view={view}
               toggleView={() => setView(view === 'HABITS' ? 'DAILY' : 'HABITS')}
             />
-            {view === 'HABITS' && (
-              <button
-                onClick={() => setView('DAILY')}
-                title="Go to Tracker"
-                className="text-zinc-700 absolute rounded-md hover:bg-zinc-400/15 hover:text-zinc-400 duration-500 transition-colors py-1 px-2 flex gap-1 align-middle text-4xl right-[-130px] top-[50%]"
-              >
-                <MdOutlineKeyboardArrowRight />
-              </button>
-            )}
-          </div>
+          </animated.div>
+          {view === 'HABITS' && (
+            <button
+              onClick={() => setView('DAILY')}
+              title="Go to Tracker"
+              className="text-zinc-700 absolute rounded-md hover:bg-zinc-400/15 hover:text-zinc-400 duration-300 transition-colors py-1 px-2 flex gap-1 align-middle text-4xl right-[-130px] top-[50%]"
+            >
+              <MdOutlineKeyboardArrowRight />
+            </button>
+          )}
           {rightPanelTransitions((style, viewState) =>
             viewState === 'DAILY' ? (
               <animated.div
