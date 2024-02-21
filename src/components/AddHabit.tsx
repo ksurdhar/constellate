@@ -3,7 +3,7 @@
 import { useState } from 'react'
 
 interface AddHabitProps {
-  addHabit: (e: React.FormEvent, name: string, frequency: string) => void
+  addHabit: (name: string, frequency: string) => void
 }
 
 const AddHabit = ({ addHabit }: AddHabitProps) => {
@@ -11,7 +11,13 @@ const AddHabit = ({ addHabit }: AddHabitProps) => {
   const [frequency, setFrequency] = useState('1')
 
   return (
-    <form onSubmit={(e) => addHabit(e, name, frequency)} className="flex gap-2">
+    <form
+      onSubmit={(e) => {
+        e.preventDefault()
+        addHabit(name, frequency)
+      }}
+      className="flex gap-2"
+    >
       <div className="flex flex-col">
         <label
           className="text-zinc-400 text-xs font-semibold pb-2"

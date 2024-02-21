@@ -5,21 +5,22 @@ import Constellation from '@/components/Constellation/Constellation'
 import DateSelector from '@/components/DateSelector'
 import HabitTable from '@/components/HabitTable'
 import WeeklyHabits from '@/components/WeeklyHabits'
-import { default as generateConstellation } from '@/hooks/UseConstellation'
+import { default as generateConstellation } from '@/utilities/generateConstellation'
+import { useHabits } from '@/hooks/useHabits'
+import { usePanelTransitions } from '@/hooks/usePanelTransitions'
+import { ConstellationData, Constellations, Entries, Entry } from '@/types'
 import {
-  ConstellationData,
-  Constellations,
-  Entries,
-  Entry,
-  Habit,
-} from '@/types'
-import { format, isSameWeek, startOfWeek } from 'date-fns'
+  getCompletedHabitsForWeek,
+  getWeekKey,
+  getWeeklyEntries,
+  normalizedDateString,
+} from '@/utilities/dateUtils'
 import { useEffect, useState } from 'react'
 import {
   MdOutlineKeyboardArrowLeft,
   MdOutlineKeyboardArrowRight,
 } from 'react-icons/md'
-import { animated, useSpring, useTransition } from 'react-spring'
+import { animated } from 'react-spring'
 
 // REMOVE ONCE ADDRESSED WITH FORK
 const originalWarn = console.error
@@ -34,75 +35,19 @@ console.error = (...args) => {
   originalWarn(...args)
 }
 
-const normalizedDateString = (date: Date) => {
-  return format(date, 'yyyy-MM-dd')
-}
-
-const getWeekKey = (date: Date): string => {
-  const start = startOfWeek(date, { weekStartsOn: 1 })
-  return format(start, 'yyyy-MM-dd')
-}
-
-const getWeeklyEntries = (entries: Entries, date: Date): Entries => {
-  const weekKey = getWeekKey(date)
-  const weeklyEntries: Entries = {}
-  Object.keys(entries)
-    .filter((key) => isSameWeek(key, weekKey))
-    .map((key) => (weeklyEntries[key] = entries[key]))
-  return weeklyEntries
-}
-
-const getCompletedHabitsForWeek = (
-  entries: Entries,
-  selectedDate: Date | null
-): string[] => {
-  if (!selectedDate) return []
-
-  return Object.keys(entries)
-    .filter((key) => {
-      return isSameWeek(key, normalizedDateString(selectedDate))
-    })
-    .reduce((acc: string[], key) => {
-      const entry = entries[key]
-      return acc.concat(entry.completedHabitIds)
-    }, [])
-}
-
 const Home = () => {
-  const [habits, setHabits] = useState<Habit[]>([
+  const { habits, addHabit, deleteHabit } = useHabits([
     { id: '1', name: 'Exercise', frequencyPerWeek: 3 },
     { id: '2', name: 'Read', frequencyPerWeek: 5 },
     { id: '3', name: 'Meditate', frequencyPerWeek: 7 },
   ])
-  const [nextId, setNextId] = useState('1')
-  const addHabit = (e: React.FormEvent, name: string, frequency: string) => {
-    e.preventDefault()
-
-    const newHabit: Habit = {
-      id: nextId,
-      name,
-      frequencyPerWeek: parseInt(frequency),
-    }
-
-    setHabits([...habits, newHabit])
-    setNextId(nextId + 1)
-  }
-
-  const handleDelete = (id: string) => {
-    setHabits(habits.filter((habit) => habit.id !== id))
-  }
-
-  const todaysDate = new Date()
-  const [selectedDate, setSelectedDate] = useState<Date | null>(todaysDate)
-
-  const [entries, setEntries] = useState<Entries>({
-    [normalizedDateString(todaysDate)]: { completedHabitIds: [] },
-  })
 
   const nodeCount = habits.reduce(
     (acc, habit) => acc + habit.frequencyPerWeek,
     0
   )
+
+  const todaysDate = new Date()
 
   const defaultConstellation = generateConstellation(nodeCount, 550, 400)
   const [constellations, setConstellations] = useState<Constellations>({
@@ -111,6 +56,11 @@ const Home = () => {
 
   const [weeklyConstellation, setWeeklyConstellation] =
     useState<ConstellationData>(defaultConstellation)
+
+  const [selectedDate, setSelectedDate] = useState<Date | null>(todaysDate)
+  const [entries, setEntries] = useState<Entries>({
+    [normalizedDateString(todaysDate)]: { completedHabitIds: [] },
+  })
 
   // potentially generates new constellations when the date changes
   const updateDate = (date: Date | null) => {
@@ -177,39 +127,9 @@ const Home = () => {
       : { completedHabitIds: [] }
 
   const [view, setView] = useState<'HABITS' | 'DAILY'>('DAILY')
-  const [isFirstMount, setIsFirstMount] = useState(true)
-  const [allowAnimation, setAllowAnimation] = useState(false)
 
-  useEffect(() => {
-    setIsFirstMount(false)
-
-    const timer = setTimeout(() => {
-      setAllowAnimation(true)
-    }, 1)
-
-    return () => clearTimeout(timer)
-  }, [])
-
-  const leftPanelTransitions = useTransition(view, {
-    from: isFirstMount ? {} : { opacity: 0, x: -500 },
-    enter: { opacity: 1, x: 0 },
-    leave: { opacity: 0, x: -500 },
-    config: { duration: 500 },
-  })
-
-  const { x } = useSpring({
-    to: { x: isFirstMount ? 0 : view === 'HABITS' ? 0 : -500 }, // need to adjust for daily
-    from: { x: 0 },
-    config: { duration: 500 },
-    immediate: !allowAnimation,
-  })
-
-  const rightPanelTransitions = useTransition(view, {
-    from: isFirstMount ? {} : { opacity: 0, x: 500 },
-    enter: { opacity: 1, x: 0 },
-    leave: { opacity: 0, x: 500 },
-    config: { duration: 500 },
-  })
+  const { leftPanelTransitions, centerPanelX, rightPanelTransitions } =
+    usePanelTransitions(view)
 
   const completedWeeklyHabits = getCompletedHabitsForWeek(entries, selectedDate)
 
@@ -245,7 +165,7 @@ const Home = () => {
                 className="min-w-fit gap-4 flex flex-col self-center absolute top-[-140px] left-[-40px]"
               >
                 <AddHabit addHabit={addHabit} />
-                <HabitTable habits={habits} handleDelete={handleDelete} />
+                <HabitTable habits={habits} handleDelete={deleteHabit} />
               </animated.div>
             ) : null
           )}
@@ -261,7 +181,11 @@ const Home = () => {
           )}
 
           <animated.div
-            style={{ transform: x.to((x) => `translate3d(${x}px, 0, 0)`) }}
+            style={{
+              transform: centerPanelX.to(
+                (centerPanelX) => `translate3d(${centerPanelX}px, 0, 0)`
+              ),
+            }}
             className={`absolute top-[-220px] ${
               view === 'HABITS' ? 'right-[-80px]' : 'right-[-90px]'
             } `}
