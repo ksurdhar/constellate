@@ -32,33 +32,47 @@ const Constellation: React.FC<ConstellationProps> = ({
   const [isHovered, setIsHovered] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
 
-  const prevCompletedHabits = useRef<number>(0)
+  const prevNodeRef = useRef<string>(`${nodes[0].x}-${nodes[0].y}`)
 
   useEffect(() => {
-    let i = activeNodeIndex
+    let timeoutId: number
 
-    const drawActiveLine = () => {
-      // incrementally adds nodes + connections for a nice animated effect
-      if (i <= completedHabits && completedHabits) {
-        setActiveNodeIndex(i)
-        setActiveConnectionIndex(i - 2)
-        i++
-        if (completedHabits - prevCompletedHabits.current > 1) {
-          setTimeout(drawActiveLine, 300)
-        } else {
-          prevCompletedHabits.current = completedHabits
-          drawActiveLine()
+    // Update the node signature to detect constellation changes
+    const prevNodeSignature = prevNodeRef.current
+    prevNodeRef.current = `${nodes[0].x}-${nodes[0].y}`
+    const isNewConstellation = prevNodeSignature !== prevNodeRef.current
+
+    let startIndex = isNewConstellation ? 0 : Math.max(0, completedHabits)
+
+    const updateIndicies = () => {
+      if (
+        (isNewConstellation && startIndex <= completedHabits) ||
+        (!isNewConstellation && startIndex !== completedHabits - 1)
+      ) {
+        setActiveNodeIndex(startIndex)
+        setActiveConnectionIndex(startIndex - 2)
+
+        const stepSize =
+          isNewConstellation || startIndex < completedHabits ? 1 : -1
+        startIndex += stepSize
+
+        const continueCondition = isNewConstellation
+          ? startIndex <= completedHabits
+          : startIndex !== completedHabits
+
+        if (continueCondition) {
+          const delay = isNewConstellation ? 300 : 0 // only incrementally draw if new constellation
+          timeoutId = window.setTimeout(updateIndicies, delay)
         }
       }
-      // immedately removes nodes + connections
-      if (i > completedHabits) {
-        setActiveNodeIndex(completedHabits)
-        setActiveConnectionIndex(completedHabits - 2)
-        prevCompletedHabits.current = completedHabits
-      }
     }
-    drawActiveLine()
-  }, [completedHabits, activeNodeIndex])
+
+    updateIndicies()
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId)
+    }
+  }, [completedHabits, nodes])
 
   useEffect(() => {
     // hack to prevent nextjs from complaining about SSR
