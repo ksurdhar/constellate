@@ -32,14 +32,17 @@ const Constellation: React.FC<ConstellationProps> = ({
   const [isHovered, setIsHovered] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
 
-  const prevNodeRef = useRef<string>(`${nodes[0].x}-${nodes[0].y}`)
+  const prevNodeRef = useRef<string>(
+    nodes.length > 0 ? `${nodes[0].x}-${nodes[0].y}` : 'empty'
+  )
 
   useEffect(() => {
     let timeoutId: number
 
     // Update the node signature to detect constellation changes
     const prevNodeSignature = prevNodeRef.current
-    prevNodeRef.current = `${nodes[0].x}-${nodes[0].y}`
+    prevNodeRef.current =
+      nodes.length > 0 ? `${nodes[0].x}-${nodes[0].y}` : 'empty'
     const isNewConstellation = prevNodeSignature !== prevNodeRef.current
 
     let startIndex = isNewConstellation ? 0 : Math.max(0, completedHabits)
