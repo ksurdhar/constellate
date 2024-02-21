@@ -39,6 +39,15 @@ const getWeekKey = (date: Date): string => {
   return format(start, 'yyyy-MM-dd')
 }
 
+const getWeeklyEntries = (entries: Entries, date: Date): Entries => {
+  const weekKey = getWeekKey(date)
+  const weeklyEntries: Entries = {}
+  Object.keys(entries)
+    .filter((key) => isSameWeek(key, weekKey))
+    .map((key) => (weeklyEntries[key] = entries[key]))
+  return weeklyEntries
+}
+
 const getCompletedHabitsForWeek = (
   entries: Entries,
   selectedDate: Date | null
@@ -99,9 +108,7 @@ const Home = () => {
   const [weeklyConstellation, setWeeklyConstellation] =
     useState<ConstellationData>(defaultConstellation)
 
-  const [isLoading, setIsLoading] = useState(false)
-
-  // potentially generates new constellations and updates weekly constellation
+  // potentially generates new constellations when the date changes
   const updateDate = (date: Date | null) => {
     setSelectedDate(date)
 
@@ -118,6 +125,36 @@ const Home = () => {
       setWeeklyConstellation(constellations[weekKey])
     }
   }
+
+  // listens for changes to nodeCount (modifications to habits) and updates constellations
+  useEffect(() => {
+    const weekKey = getWeekKey(selectedDate || new Date())
+    if (constellations[weekKey].nodes.length !== nodeCount) {
+      const { nodes, connections } = generateConstellation(nodeCount, 550, 400)
+      setConstellations({
+        ...constellations,
+        [weekKey]: { nodes, connections },
+      })
+      setWeeklyConstellation({ nodes, connections })
+
+      const weeklyEntries = getWeeklyEntries(
+        entries,
+        selectedDate || new Date()
+      )
+
+      // remove completedHabitIds that no longer exist
+      const updatedEntries = { ...weeklyEntries }
+      Object.keys(weeklyEntries).forEach((key) => {
+        updatedEntries[key] = {
+          ...updatedEntries[key],
+          completedHabitIds: updatedEntries[key].completedHabitIds.filter(
+            (id) => habits.some((habit) => habit.id === id)
+          ),
+        }
+      })
+      setEntries(updatedEntries)
+    }
+  }, [nodeCount, constellations, selectedDate, entries, habits])
 
   const dailyEntry =
     selectedDate && entries[normalizedDateString(selectedDate)]

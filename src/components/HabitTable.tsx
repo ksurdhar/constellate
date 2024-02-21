@@ -20,7 +20,10 @@ const HabitTable = ({ habits, handleDelete }: HabitTableProps) => {
         </thead>
         <tbody className="text-sm">
           {habits.map(({ id, name, frequencyPerWeek }) => (
-            <tr key={id} className="group hover:bg-white/5 hover:text-zinc-200">
+            <tr
+              key={name}
+              className="group hover:bg-white/5 hover:text-zinc-200"
+            >
               <td className="py-3 px-4">{name}</td>
               <td className="py-3 px-4 flex justify-between">
                 {`${frequencyPerWeek}x`}
