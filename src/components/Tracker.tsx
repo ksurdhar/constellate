@@ -15,6 +15,8 @@ import {
   normalizedDateString,
 } from '@/utilities/dateUtils'
 import { default as generateConstellation } from '@/utilities/generateConstellation'
+import { SignOutButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
+import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import {
   MdOutlineKeyboardArrowLeft,
@@ -189,6 +191,18 @@ const Home = () => {
         <div className="cursor-pointer transition-colors hover:text-zinc-200">
           FAQ
         </div>
+        <SignedIn>
+          <SignOutButton>
+            <div className="cursor-pointer transition-colors hover:text-zinc-200">
+              LOGOUT
+            </div>
+          </SignOutButton>
+        </SignedIn>
+        <SignedOut>
+          <div className="cursor-pointer transition-colors hover:text-zinc-200">
+            <Link href="/sign-in">LOGIN</Link>
+          </div>
+        </SignedOut>
       </nav>
       <div className="flex min-h-screen flex-col items-center justify-center py-5 text-lg">
         <div className="w-full max-w-4xl px-4 relative">
