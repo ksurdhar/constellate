@@ -5,8 +5,8 @@ import Constellation from '@/components/Constellation/Constellation'
 import DateSelector from '@/components/DateSelector'
 import HabitTable from '@/components/HabitTable'
 import WeeklyHabits from '@/components/WeeklyHabits'
-import { useHabits } from '@/hooks/useHabits'
-import { usePanelTransitions } from '@/hooks/usePanelTransitions'
+import { useHabits } from '@/hooks/UseHabits'
+import { usePanelTransitions } from '@/hooks/UsePanelTransitions'
 import { ConstellationData, Constellations, Entries, Entry } from '@/types'
 import {
   getCompletedHabitsForWeek,
