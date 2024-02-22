@@ -1,9 +1,23 @@
 import { Habit } from '@/types'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
-export const useHabits = (initialHabits: Habit[] = []) => {
-  const [habits, setHabits] = useState(initialHabits)
-  const [nextId, setNextId] = useState(initialHabits.length + 1)
+export const useHabits = () => {
+  const [habits, setHabits] = useState<Habit[]>(() => {
+    const defaultHabits: Habit[] = [
+      { id: '1', name: 'Exercise', frequencyPerWeek: 3 },
+      { id: '2', name: 'Read', frequencyPerWeek: 5 },
+      { id: '3', name: 'Meditate', frequencyPerWeek: 7 },
+    ]
+    const storedHabits = JSON.parse(
+      localStorage.getItem('habits') || '[]'
+    ) as Habit[]
+    return storedHabits.length ? storedHabits : defaultHabits
+  })
+  const [nextId, setNextId] = useState(habits.length + 1)
+
+  useEffect(() => {
+    localStorage.setItem('habits', JSON.stringify(habits))
+  }, [habits])
 
   const addHabit = (name: string, frequencyPerWeek: string) => {
     const newHabit = {

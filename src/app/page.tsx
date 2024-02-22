@@ -5,7 +5,6 @@ import Constellation from '@/components/Constellation/Constellation'
 import DateSelector from '@/components/DateSelector'
 import HabitTable from '@/components/HabitTable'
 import WeeklyHabits from '@/components/WeeklyHabits'
-import { default as generateConstellation } from '@/utilities/generateConstellation'
 import { useHabits } from '@/hooks/useHabits'
 import { usePanelTransitions } from '@/hooks/usePanelTransitions'
 import { ConstellationData, Constellations, Entries, Entry } from '@/types'
@@ -15,6 +14,7 @@ import {
   getWeeklyEntries,
   normalizedDateString,
 } from '@/utilities/dateUtils'
+import { default as generateConstellation } from '@/utilities/generateConstellation'
 import { useEffect, useState } from 'react'
 import {
   MdOutlineKeyboardArrowLeft,
@@ -36,11 +36,7 @@ console.error = (...args) => {
 }
 
 const Home = () => {
-  const { habits, addHabit, deleteHabit } = useHabits([
-    { id: '1', name: 'Exercise', frequencyPerWeek: 3 },
-    { id: '2', name: 'Read', frequencyPerWeek: 5 },
-    { id: '3', name: 'Meditate', frequencyPerWeek: 7 },
-  ])
+  const { habits, addHabit, deleteHabit } = useHabits()
 
   const nodeCount = habits.reduce(
     (acc, habit) => acc + habit.frequencyPerWeek,
@@ -50,25 +46,63 @@ const Home = () => {
   const todaysDate = new Date()
 
   const defaultConstellation = generateConstellation(nodeCount, 550, 400)
-  const [constellations, setConstellations] = useState<Constellations>({
-    [getWeekKey(todaysDate)]: defaultConstellation,
+
+  const [constellations, setConstellations] = useState<Constellations>(() => {
+    const storedConstellations = JSON.parse(
+      localStorage.getItem('constellations') || '{}'
+    ) as Constellations
+
+    if (Object.keys(storedConstellations).length > 0) {
+      return storedConstellations
+    }
+    return {
+      [getWeekKey(todaysDate)]: defaultConstellation,
+    }
   })
 
   const [weeklyConstellation, setWeeklyConstellation] =
-    useState<ConstellationData>(defaultConstellation)
+    useState<ConstellationData>(() => {
+      const storedConstellations = JSON.parse(
+        localStorage.getItem('constellations') || '{}'
+      ) as Constellations
+
+      if (
+        Object.keys(storedConstellations).length > 0 &&
+        storedConstellations[getWeekKey(new Date())]
+      ) {
+        return storedConstellations[getWeekKey(new Date())]
+      } else {
+        return defaultConstellation
+      }
+    })
+  useEffect(() => {
+    localStorage.setItem('constellations', JSON.stringify(constellations))
+  }, [constellations])
 
   const [selectedDate, setSelectedDate] = useState<Date | null>(todaysDate)
-  const [entries, setEntries] = useState<Entries>({
-    [normalizedDateString(todaysDate)]: { completedHabitIds: [] },
+  const [entries, setEntries] = useState<Entries>(() => {
+    const storedEntries = JSON.parse(
+      localStorage.getItem('entries') || '{}'
+    ) as Entries
+
+    if (Object.keys(storedEntries).length > 0) {
+      return storedEntries
+    }
+    return {
+      [getWeekKey(todaysDate)]: { completedHabitIds: [] },
+    }
   })
 
-  // potentially generates new constellations when the date changes
+  useEffect(() => {
+    localStorage.setItem('entries', JSON.stringify(entries))
+  }, [entries])
+
   const updateDate = (date: Date | null) => {
     setSelectedDate(date)
-
     const weekKey = getWeekKey(date || new Date())
 
     if (!constellations[weekKey]) {
+      // generate new constellation + set
       const { nodes, connections } = generateConstellation(nodeCount, 550, 400)
       setConstellations({
         ...constellations,
@@ -76,6 +110,7 @@ const Home = () => {
       })
       setWeeklyConstellation({ nodes, connections })
     } else if (weeklyConstellation !== constellations[weekKey]) {
+      // just sets previous constellation
       setWeeklyConstellation(constellations[weekKey])
     }
   }
