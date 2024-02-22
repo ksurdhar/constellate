@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
-import 'react-nice-dates/build/style.css'
+import '@ksurdhar/react-nice-dates/build/style.css'
 import './globals.css'
 
 const inter = Inter({

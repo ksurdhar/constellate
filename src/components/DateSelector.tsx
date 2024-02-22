@@ -1,8 +1,8 @@
+import { DatePicker } from '@ksurdhar/react-nice-dates'
 import { isSameWeek } from 'date-fns'
 import { enGB } from 'date-fns/locale'
 import { IoIosArrowBack, IoIosArrowForward } from 'react-icons/io'
 import { MdToday } from 'react-icons/md'
-import { DatePicker } from 'react-nice-dates'
 
 interface SelectorProps {
   selectedDate: Date

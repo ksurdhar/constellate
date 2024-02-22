@@ -1,3 +1,5 @@
+'use client'
+
 import { Habit } from '@/types'
 
 interface CheckboxProps {

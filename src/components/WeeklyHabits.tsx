@@ -1,3 +1,5 @@
+'use client'
+
 import { Entry, Habit } from '@/types'
 import HabitCheckbox from './HabitCheckbox'
 
