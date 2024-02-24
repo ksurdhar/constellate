@@ -1,7 +1,7 @@
 export type Habit = {
   id: string
   name: string
-  frequencyPerWeek: number
+  frequency: number
 }
 
 export interface Node {

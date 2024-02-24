@@ -36,7 +36,6 @@ const Constellation: React.FC<ConstellationProps> = ({
   const [activeConnectionIndex, setActiveConnectionIndex] = useState(-1)
   const [isHovered, setIsHovered] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
-
   const prevNodeRef = useRef<string>(
     nodes.length > 0 ? `${nodes[0].x}-${nodes[0].y}` : 'empty'
   )

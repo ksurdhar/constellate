@@ -19,14 +19,14 @@ const HabitTable = ({ habits, handleDelete }: HabitTableProps) => {
           </tr>
         </thead>
         <tbody className="text-sm">
-          {habits.map(({ id, name, frequencyPerWeek }) => (
+          {habits.map(({ id, name, frequency }) => (
             <tr
               key={name}
               className="group hover:bg-white/5 hover:text-zinc-200"
             >
               <td className="py-3 px-4">{name}</td>
               <td className="py-3 px-4 flex justify-between">
-                {`${frequencyPerWeek}x`}
+                {`${frequency}x`}
                 <MdDeleteOutline
                   className="text-lg cursor-pointer hover:text-red-400"
                   onClick={() => handleDelete(id)}

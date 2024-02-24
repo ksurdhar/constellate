@@ -58,10 +58,10 @@ const WeeklyHabits = ({
                     habit={habit}
                     checked={dailyEntry.completedHabitIds.includes(habit.id)}
                     onToggle={() => toggleDailyHabit(habit)}
-                    disabled={weeklyHabitCount === habit.frequencyPerWeek}
+                    disabled={weeklyHabitCount === habit.frequency}
                   />
                 </td>
-                <td className="py-3 px-4 flex justify-between">{`${weeklyHabitCount}/${habit.frequencyPerWeek}`}</td>
+                <td className="py-3 px-4 flex justify-between">{`${weeklyHabitCount}/${habit.frequency}`}</td>
               </tr>
             )
           })}

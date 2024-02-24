@@ -7,7 +7,13 @@ import HabitTable from '@/components/HabitTable'
 import WeeklyHabits from '@/components/WeeklyHabits'
 import { useHabits } from '@/hooks/UseHabits'
 import { usePanelTransitions } from '@/hooks/UsePanelTransitions'
-import { ConstellationData, Constellations, Entries, Entry } from '@/types'
+import {
+  ConstellationData,
+  Constellations,
+  Entries,
+  Entry,
+  Habit,
+} from '@/types'
 import {
   getCompletedHabitsForWeek,
   getWeekKey,
@@ -15,7 +21,7 @@ import {
   normalizedDateString,
 } from '@/utilities/dateUtils'
 import { default as generateConstellation } from '@/utilities/generateConstellation'
-import { SignOutButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
+import { SignOutButton, SignedIn, SignedOut } from '@clerk/nextjs'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import {
@@ -24,17 +30,23 @@ import {
 } from 'react-icons/md'
 import { animated } from 'react-spring'
 
-const Home = () => {
-  const { habits, addHabit, deleteHabit } = useHabits()
+interface TrackerProps {
+  serverHabits?: Habit[]
+}
 
-  const nodeCount = habits.reduce(
-    (acc, habit) => acc + habit.frequencyPerWeek,
-    0
-  )
+const Tracker = ({ serverHabits }: TrackerProps) => {
+  const { habits, addHabit, deleteHabit } = useHabits(serverHabits)
+  // const { isSignedIn, user, isLoaded } = useUser()
+
+  const nodeCount = habits.reduce((acc, habit) => acc + habit.frequency, 0)
 
   const todaysDate = new Date()
 
-  const defaultConstellation = generateConstellation(nodeCount, 550, 400)
+  const defaultConstellation = generateConstellation(
+    nodeCount > 0 ? nodeCount : 2,
+    550,
+    400
+  )
 
   const [constellations, setConstellations] = useState<Constellations>({
     [getWeekKey(todaysDate)]: defaultConstellation,
@@ -121,6 +133,8 @@ const Home = () => {
   }
 
   // listens for changes to nodeCount (modifications to habits) and updates constellations
+  // replace with useffectevent
+
   useEffect(() => {
     const weekKey = getWeekKey(selectedDate || new Date())
     if (constellations[weekKey].nodes.length !== nodeCount) {
@@ -136,12 +150,11 @@ const Home = () => {
       )
       setWeeklyConstellation({ nodes, connections })
 
+      // remove completedHabitIds that no longer exist
       const weeklyEntries = getWeeklyEntries(
         entries,
         selectedDate || new Date()
       )
-
-      // remove completedHabitIds that no longer exist
       const updatedEntries = { ...weeklyEntries }
       Object.keys(weeklyEntries).forEach((key) => {
         updatedEntries[key] = {
@@ -151,7 +164,6 @@ const Home = () => {
           ),
         }
       })
-
       setEntries(updatedEntries)
       localStorage.setItem('entries', JSON.stringify(updatedEntries))
     }
@@ -242,7 +254,7 @@ const Home = () => {
               nodes={weeklyConstellation.nodes}
               connections={weeklyConstellation.connections}
               nodeCount={habits.reduce(
-                (acc, habit) => acc + habit.frequencyPerWeek,
+                (acc, habit) => acc + habit.frequency,
                 0
               )}
               width={550}
@@ -298,4 +310,4 @@ const Home = () => {
   )
 }
 
-export default Home
+export default Tracker

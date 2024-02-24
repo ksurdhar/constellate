@@ -15,6 +15,7 @@ const AddHabit = ({ addHabit }: AddHabitProps) => {
       onSubmit={(e) => {
         e.preventDefault()
         addHabit(name, frequency)
+        setName('')
       }}
       className="flex gap-2"
     >
