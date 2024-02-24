@@ -5,12 +5,16 @@ import { createClient } from '@/utilities/supabase/client'
 import { useUser } from '@clerk/nextjs'
 import { useEffect, useState } from 'react'
 
+const defaultHabits = [
+  { id: '1', name: 'Exercise', frequency: 3 },
+  { id: '2', name: 'Read', frequency: 5 },
+  { id: '3', name: 'Meditate', frequency: 7 },
+]
+
 export const useHabits = (serverHabits?: Habit[]) => {
-  const [habits, setHabits] = useState<Habit[]>([
-    { id: '1', name: 'Exercise', frequency: 3 },
-    { id: '2', name: 'Read', frequency: 5 },
-    { id: '3', name: 'Meditate', frequency: 7 },
-  ])
+  const [habits, setHabits] = useState<Habit[]>(
+    serverHabits ? serverHabits : defaultHabits
+  )
   const [nextId, setNextId] = useState(habits.length + 1)
 
   const { isSignedIn, user } = useUser()

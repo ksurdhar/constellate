@@ -5,25 +5,20 @@ import Constellation from '@/components/Constellation/Constellation'
 import DateSelector from '@/components/DateSelector'
 import HabitTable from '@/components/HabitTable'
 import WeeklyHabits from '@/components/WeeklyHabits'
+import { useConstellations } from '@/hooks/UseConstellations'
+import { useEntries } from '@/hooks/UseEntries'
 import { useHabits } from '@/hooks/UseHabits'
 import { usePanelTransitions } from '@/hooks/UsePanelTransitions'
-import {
-  ConstellationData,
-  Constellations,
-  Entries,
-  Entry,
-  Habit,
-} from '@/types'
+import { Entry, Habit } from '@/types'
 import {
   getCompletedHabitsForWeek,
   getWeekKey,
   getWeeklyEntries,
   normalizedDateString,
 } from '@/utilities/dateUtils'
-import { default as generateConstellation } from '@/utilities/generateConstellation'
 import { SignOutButton, SignedIn, SignedOut } from '@clerk/nextjs'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import {
   MdOutlineKeyboardArrowLeft,
   MdOutlineKeyboardArrowRight,
@@ -36,143 +31,22 @@ interface TrackerProps {
 
 const Tracker = ({ serverHabits }: TrackerProps) => {
   const { habits, addHabit, deleteHabit } = useHabits(serverHabits)
-  // const { isSignedIn, user, isLoaded } = useUser()
+  const habitCount = habits.reduce((acc, habit) => acc + habit.frequency, 0)
 
-  const nodeCount = habits.reduce((acc, habit) => acc + habit.frequency, 0)
+  const {
+    weeklyConstellation,
+    setWeeklyConstellation,
+    constellations,
+    regenerate,
+  } = useConstellations()
 
   const todaysDate = new Date()
 
-  const defaultConstellation = generateConstellation(
-    nodeCount > 0 ? nodeCount : 2,
-    550,
-    400
-  )
-
-  const [constellations, setConstellations] = useState<Constellations>({
-    [getWeekKey(todaysDate)]: defaultConstellation,
-  })
-
-  useEffect(() => {
-    const storedConstellations = JSON.parse(
-      localStorage.getItem('constellations') || '{}'
-    ) as Constellations
-
-    if (Object.keys(storedConstellations).length > 0) {
-      setConstellations(storedConstellations)
-    }
-  }, [])
-
-  const [weeklyConstellation, setWeeklyConstellation] =
-    useState<ConstellationData>(defaultConstellation)
-
-  useEffect(() => {
-    const storedConstellations = JSON.parse(
-      localStorage.getItem('constellations') || '{}'
-    ) as Constellations
-
-    if (
-      Object.keys(storedConstellations).length > 0 &&
-      storedConstellations[getWeekKey(new Date())]
-    ) {
-      setWeeklyConstellation(storedConstellations[getWeekKey(new Date())])
-    }
-  }, [])
-
   const [selectedDate, setSelectedDate] = useState<Date | null>(todaysDate)
-  const [entries, setEntries] = useState<Entries>({
-    [getWeekKey(todaysDate)]: { completedHabitIds: [] },
-  })
 
-  useEffect(() => {
-    const storedEntries = JSON.parse(
-      localStorage.getItem('entries') || '{}'
-    ) as Entries
-
-    if (Object.keys(storedEntries).length > 0) {
-      setEntries(storedEntries)
-    }
-  }, [])
-
-  const updateDate = (date: Date | null) => {
-    setSelectedDate(date)
-    const weekKey = getWeekKey(date || new Date())
-
-    if (!constellations[weekKey]) {
-      // generate new constellation + set
-      const { nodes, connections } = generateConstellation(nodeCount, 550, 400)
-      const updatedConstellations = {
-        ...constellations,
-        [weekKey]: { nodes, connections },
-      }
-      setConstellations(updatedConstellations)
-      localStorage.setItem(
-        'constellations',
-        JSON.stringify(updatedConstellations)
-      )
-      setWeeklyConstellation({ nodes, connections })
-    } else if (weeklyConstellation !== constellations[weekKey]) {
-      // just sets previous constellation
-      setWeeklyConstellation(constellations[weekKey])
-    }
-  }
-
-  const regenerate = () => {
-    const weekKey = getWeekKey(selectedDate || new Date())
-
-    const { nodes, connections } = generateConstellation(nodeCount, 550, 400)
-    const updatedConstellations = {
-      ...constellations,
-      [weekKey]: { nodes, connections },
-    }
-    setConstellations(updatedConstellations)
-    localStorage.setItem(
-      'constellations',
-      JSON.stringify(updatedConstellations)
-    )
-    setWeeklyConstellation({ nodes, connections })
-  }
-
-  // listens for changes to nodeCount (modifications to habits) and updates constellations
-  // replace with useffectevent
-
-  useEffect(() => {
-    const weekKey = getWeekKey(selectedDate || new Date())
-    if (constellations[weekKey].nodes.length !== nodeCount) {
-      const { nodes, connections } = generateConstellation(nodeCount, 550, 400)
-      const updatedConstellations = {
-        ...constellations,
-        [weekKey]: { nodes, connections },
-      }
-      setConstellations(updatedConstellations)
-      localStorage.setItem(
-        'constellations',
-        JSON.stringify(updatedConstellations)
-      )
-      setWeeklyConstellation({ nodes, connections })
-
-      // remove completedHabitIds that no longer exist
-      const weeklyEntries = getWeeklyEntries(
-        entries,
-        selectedDate || new Date()
-      )
-      const updatedEntries = { ...weeklyEntries }
-      Object.keys(weeklyEntries).forEach((key) => {
-        updatedEntries[key] = {
-          ...updatedEntries[key],
-          completedHabitIds: updatedEntries[key].completedHabitIds.filter(
-            (id) => habits.some((habit) => habit.id === id)
-          ),
-        }
-      })
-      setEntries(updatedEntries)
-      localStorage.setItem('entries', JSON.stringify(updatedEntries))
-    }
-  }, [nodeCount, constellations, selectedDate, entries, habits])
-
-  const dailyEntry =
-    selectedDate && entries[normalizedDateString(selectedDate)]
-      ? entries[normalizedDateString(selectedDate)]
-      : { completedHabitIds: [] }
+  const { entries, setEntries, dailyEntry } = useEntries(
+    selectedDate || todaysDate
+  )
 
   const [view, setView] = useState<'HABITS' | 'DAILY'>('DAILY')
 
@@ -224,8 +98,45 @@ const Tracker = ({ serverHabits }: TrackerProps) => {
                 style={style}
                 className="min-w-fit gap-4 flex flex-col self-center absolute top-[-140px] left-[-40px]"
               >
-                <AddHabit addHabit={addHabit} />
-                <HabitTable habits={habits} handleDelete={deleteHabit} />
+                <AddHabit
+                  addHabit={(name, frequency) => {
+                    addHabit(name, frequency)
+                    regenerate(
+                      selectedDate || new Date(),
+                      habitCount + parseInt(frequency)
+                    )
+                  }}
+                />
+                <HabitTable
+                  habits={habits}
+                  handleDelete={(id, frequency) => {
+                    deleteHabit(id)
+                    regenerate(
+                      selectedDate || new Date(),
+                      habitCount - frequency
+                    )
+                    const weeklyEntries = getWeeklyEntries(
+                      entries,
+                      selectedDate || new Date()
+                    )
+                    const updatedEntries = { ...weeklyEntries }
+                    Object.keys(weeklyEntries).forEach((key) => {
+                      updatedEntries[key] = {
+                        ...updatedEntries[key],
+                        completedHabitIds: updatedEntries[
+                          key
+                        ].completedHabitIds.filter((id) =>
+                          habits.some((habit) => habit.id === id)
+                        ),
+                      }
+                    })
+                    setEntries(updatedEntries)
+                    localStorage.setItem(
+                      'entries',
+                      JSON.stringify(updatedEntries)
+                    )
+                  }}
+                />
               </animated.div>
             ) : null
           )}
@@ -260,7 +171,9 @@ const Tracker = ({ serverHabits }: TrackerProps) => {
               width={550}
               height={400}
               completedHabits={completedWeeklyHabits.length}
-              regenerate={regenerate}
+              regenerate={() =>
+                regenerate(selectedDate || new Date(), habitCount)
+              }
               view={view}
               toggleView={() => setView(view === 'HABITS' ? 'DAILY' : 'HABITS')}
             />
@@ -282,7 +195,18 @@ const Tracker = ({ serverHabits }: TrackerProps) => {
               >
                 <DateSelector
                   selectedDate={selectedDate ? selectedDate : todaysDate}
-                  setSelectedDate={updateDate}
+                  setSelectedDate={(date: Date | null) => {
+                    setSelectedDate(date)
+                    const weekKey = getWeekKey(date || new Date())
+
+                    if (!constellations[weekKey]) {
+                      regenerate(date || new Date(), habitCount)
+                    } else if (
+                      weeklyConstellation !== constellations[weekKey]
+                    ) {
+                      setWeeklyConstellation(constellations[weekKey])
+                    }
+                  }}
                 />
                 <WeeklyHabits
                   dailyEntry={dailyEntry}

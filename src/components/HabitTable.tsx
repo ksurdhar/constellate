@@ -5,7 +5,7 @@ import { MdDeleteOutline } from 'react-icons/md'
 
 interface HabitTableProps {
   habits: Habit[]
-  handleDelete: (id: string) => void
+  handleDelete: (id: string, frequency: number) => void
 }
 
 const HabitTable = ({ habits, handleDelete }: HabitTableProps) => {
@@ -29,7 +29,7 @@ const HabitTable = ({ habits, handleDelete }: HabitTableProps) => {
                 {`${frequency}x`}
                 <MdDeleteOutline
                   className="text-lg cursor-pointer hover:text-red-400"
-                  onClick={() => handleDelete(id)}
+                  onClick={() => handleDelete(id, frequency)}
                 />
               </td>
             </tr>
