@@ -16,6 +16,7 @@ export const useEntries = (serverEntries: Entries, selectedDate: Date) => {
   const supabase = createClient()
 
   useEffect(() => {
+    if (serverEntries) return
     const storedEntries = JSON.parse(
       localStorage.getItem('entries') || '{}'
     ) as Entries
@@ -23,7 +24,7 @@ export const useEntries = (serverEntries: Entries, selectedDate: Date) => {
     if (Object.keys(storedEntries).length > 0) {
       setEntries(storedEntries)
     }
-  }, [])
+  }, [serverEntries])
 
   const dailyEntry =
     selectedDate && entries[getDayKey(selectedDate)]
@@ -52,6 +53,7 @@ export const useEntries = (serverEntries: Entries, selectedDate: Date) => {
           { ignoreDuplicates: false }
         )
         .select()
+      // handle error case by undoing optimistic update
       if (error) console.log('supabase error', error)
       if (!data) return
       const updatedEntries = {
