@@ -1,13 +1,13 @@
 import { Entries } from '@/types'
 import { format, isSameWeek, startOfWeek } from 'date-fns'
 
-export const normalizedDateString = (date: Date) => {
+export const getDayKey = (date: Date) => {
   return format(date, 'yyyy-MM-dd')
 }
 
 export const getWeekKey = (date: Date): string => {
   const start = startOfWeek(date, { weekStartsOn: 1 })
-  return format(start, 'yyyy-MM-dd')
+  return getDayKey(start)
 }
 
 export const getWeeklyEntries = (entries: Entries, date: Date): Entries => {
@@ -27,7 +27,7 @@ export const getCompletedHabitsForWeek = (
 
   return Object.keys(entries)
     .filter((key) => {
-      return isSameWeek(key, normalizedDateString(selectedDate))
+      return isSameWeek(key, getDayKey(selectedDate))
     })
     .reduce((acc: string[], key) => {
       const entry = entries[key]

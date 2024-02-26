@@ -9,12 +9,11 @@ import { useConstellations } from '@/hooks/UseConstellations'
 import { useEntries } from '@/hooks/UseEntries'
 import { useHabits } from '@/hooks/UseHabits'
 import { usePanelTransitions } from '@/hooks/UsePanelTransitions'
-import { Entry, Habit } from '@/types'
+import { Entries, Entry, Habit } from '@/types'
 import {
   getCompletedHabitsForWeek,
   getWeekKey,
   getWeeklyEntries,
-  normalizedDateString,
 } from '@/utilities/dateUtils'
 import { SignOutButton, SignedIn, SignedOut } from '@clerk/nextjs'
 import Link from 'next/link'
@@ -27,9 +26,10 @@ import { animated } from 'react-spring'
 
 interface TrackerProps {
   serverHabits?: Habit[]
+  serverEntries: Entries
 }
 
-const Tracker = ({ serverHabits }: TrackerProps) => {
+const Tracker = ({ serverHabits, serverEntries }: TrackerProps) => {
   const { habits, addHabit, deleteHabit } = useHabits(serverHabits)
   const habitCount = habits.reduce((acc, habit) => acc + habit.frequency, 0)
 
@@ -44,7 +44,8 @@ const Tracker = ({ serverHabits }: TrackerProps) => {
 
   const [selectedDate, setSelectedDate] = useState<Date | null>(todaysDate)
 
-  const { entries, setEntries, dailyEntry } = useEntries(
+  const { entries, setEntries, dailyEntry, updateEntry } = useEntries(
+    serverEntries,
     selectedDate || todaysDate
   )
 
@@ -214,15 +215,7 @@ const Tracker = ({ serverHabits }: TrackerProps) => {
                   habits={habits}
                   updateEntry={(updatedEntry: Entry) => {
                     if (!selectedDate) return
-                    const updatedEntries = {
-                      ...entries,
-                      [normalizedDateString(selectedDate)]: updatedEntry,
-                    }
-                    setEntries(updatedEntries)
-                    localStorage.setItem(
-                      'entries',
-                      JSON.stringify(updatedEntries)
-                    )
+                    updateEntry(updatedEntry, selectedDate)
                   }}
                 />
               </animated.div>

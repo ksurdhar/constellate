@@ -4,7 +4,14 @@ export type Habit = {
   frequency: number
 }
 
-export interface Node {
+export interface Entry {
+  id?: string
+  completedHabitIds: string[]
+}
+
+export type Entries = { [key: string]: Entry }
+
+export interface ConstellationNode {
   id: number
   x: number
   y: number
@@ -18,15 +25,9 @@ export interface Connection {
   target: number
 }
 
-export interface Entry {
-  completedHabitIds: string[]
-}
-
 export interface ConstellationData {
-  nodes: Node[]
+  nodes: ConstellationNode[]
   connections: Connection[]
 }
-
-export type Entries = { [key: string]: Entry }
 
 export type Constellations = { [key: string]: ConstellationData }

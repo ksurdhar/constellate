@@ -2,7 +2,7 @@
 
 import { GrPowerCycle } from 'react-icons/gr'
 
-import { Connection, Node } from '@/types'
+import { Connection, ConstellationNode } from '@/types'
 import React, { useEffect, useRef, useState } from 'react'
 import { FaCaretRight } from 'react-icons/fa'
 import ActiveLine from './ActiveLine'
@@ -10,7 +10,7 @@ import InactiveLine from './InactiveLine'
 import StarNode from './StarNode'
 
 interface ConstellationProps {
-  nodes: Node[]
+  nodes: ConstellationNode[]
   connections: Connection[]
   nodeCount: number
   width: number

@@ -1,11 +1,19 @@
 import { Entries, Entry } from '@/types'
-import { getWeekKey, normalizedDateString } from '@/utilities/dateUtils'
+import { getDayKey } from '@/utilities/dateUtils'
+import { createClient } from '@/utilities/supabase/client'
+import { useUser } from '@clerk/nextjs'
 import { useEffect, useState } from 'react'
 
-export const useEntries = (selectedDate: Date, serverEntries?: Entry[]) => {
-  const [entries, setEntries] = useState<Entries>({
-    [getWeekKey(selectedDate)]: { completedHabitIds: [] },
+export const useEntries = (serverEntries: Entries, selectedDate: Date) => {
+  const [entries, setEntries] = useState<Entries>(() => {
+    if (Object.keys(serverEntries).length > 0) return serverEntries
+    return {
+      [getDayKey(selectedDate)]: { completedHabitIds: [] },
+    }
   })
+
+  const { isSignedIn, user } = useUser()
+  const supabase = createClient()
 
   useEffect(() => {
     const storedEntries = JSON.parse(
@@ -18,9 +26,44 @@ export const useEntries = (selectedDate: Date, serverEntries?: Entry[]) => {
   }, [])
 
   const dailyEntry =
-    selectedDate && entries[normalizedDateString(selectedDate)]
-      ? entries[normalizedDateString(selectedDate)]
+    selectedDate && entries[getDayKey(selectedDate)]
+      ? entries[getDayKey(selectedDate)]
       : { completedHabitIds: [] }
 
-  return { entries, setEntries, dailyEntry }
+  const updateEntry = async (entry: Entry, selectedDate: Date) => {
+    const updatedEntries = {
+      ...entries,
+      [getDayKey(selectedDate)]: entry,
+    }
+    setEntries(updatedEntries)
+
+    if (!isSignedIn) {
+      localStorage.setItem('entries', JSON.stringify(updatedEntries))
+    } else {
+      const { error, data } = await supabase
+        .from('entries')
+        .upsert(
+          {
+            id: entry.id,
+            completed_habits: entry.completedHabitIds,
+            day_key: getDayKey(selectedDate),
+            user_id: user.id,
+          },
+          { ignoreDuplicates: false }
+        )
+        .select()
+      if (error) console.log('supabase error', error)
+      if (!data) return
+      const updatedEntries = {
+        ...entries,
+        [getDayKey(selectedDate)]: {
+          ...entry,
+          id: data[0].id,
+        },
+      }
+      setEntries(updatedEntries)
+    }
+  }
+
+  return { entries, setEntries, dailyEntry, updateEntry }
 }
