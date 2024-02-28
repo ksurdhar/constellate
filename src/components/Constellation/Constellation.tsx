@@ -37,6 +37,7 @@ const Constellation: React.FC<ConstellationProps> = ({
   const [isHovered, setIsHovered] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
   const [hasInitialDraw, setHasInitialDraw] = useState(false)
+  const [animationInProgress, setAnimationInProgress] = useState(false)
 
   const prevNodeRef = useRef<string>(
     nodes.length > 0 ? `${nodes[0].x}-${nodes[0].y}` : 'empty'
@@ -53,6 +54,7 @@ const Constellation: React.FC<ConstellationProps> = ({
 
   useEffect(() => {
     let timeoutId: number
+    if (animationInProgress) return
 
     // Update the node signature to detect constellation changes
     const prevNodeSignature = prevNodeRef.current
@@ -84,16 +86,18 @@ const Constellation: React.FC<ConstellationProps> = ({
           timeoutId = window.setTimeout(updateIndicies, delay)
         } else {
           setHasInitialDraw(true)
+          setAnimationInProgress(false)
         }
       }
     }
 
-    timeoutId = window.setTimeout(updateIndicies, 0)
+    updateIndicies()
 
     return () => {
       if (timeoutId) clearTimeout(timeoutId)
+      setAnimationInProgress(false)
     }
-  }, [completedHabits, nodes, hasInitialDraw])
+  }, [completedHabits, nodes, hasInitialDraw, animationInProgress])
 
   if (!isLoaded) {
     return null
