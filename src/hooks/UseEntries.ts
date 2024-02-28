@@ -4,6 +4,8 @@ import { createClient } from '@/utilities/supabase/client'
 import { useUser } from '@clerk/nextjs'
 import { useEffect, useState } from 'react'
 
+// this will fail if server entries exist but there is no entry for day
+// add generation to the server
 export const useEntries = (serverEntries: Entries, selectedDate: Date) => {
   const [entries, setEntries] = useState<Entries>(() => {
     if (Object.keys(serverEntries).length > 0) return serverEntries
@@ -16,7 +18,7 @@ export const useEntries = (serverEntries: Entries, selectedDate: Date) => {
   const supabase = createClient()
 
   useEffect(() => {
-    if (serverEntries) return
+    if (Object.keys(serverEntries).length > 0) return
     const storedEntries = JSON.parse(
       localStorage.getItem('entries') || '{}'
     ) as Entries

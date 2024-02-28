@@ -26,6 +26,7 @@ export interface Connection {
 }
 
 export interface ConstellationData {
+  id?: string
   nodes: ConstellationNode[]
   connections: Connection[]
 }

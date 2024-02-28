@@ -9,7 +9,7 @@ import { useConstellations } from '@/hooks/UseConstellations'
 import { useEntries } from '@/hooks/UseEntries'
 import { useHabits } from '@/hooks/UseHabits'
 import { usePanelTransitions } from '@/hooks/UsePanelTransitions'
-import { Entries, Entry, Habit } from '@/types'
+import { Constellations, Entries, Entry, Habit } from '@/types'
 import {
   getCompletedHabitsForWeek,
   getWeekKey,
@@ -27,9 +27,14 @@ import { animated } from 'react-spring'
 interface TrackerProps {
   serverHabits?: Habit[]
   serverEntries: Entries
+  serverConstellations: Constellations
 }
 
-const Tracker = ({ serverHabits, serverEntries }: TrackerProps) => {
+const Tracker = ({
+  serverHabits,
+  serverEntries,
+  serverConstellations,
+}: TrackerProps) => {
   const { habits, addHabit, deleteHabit } = useHabits(serverHabits)
   const habitCount = habits.reduce((acc, habit) => acc + habit.frequency, 0)
 
@@ -38,7 +43,7 @@ const Tracker = ({ serverHabits, serverEntries }: TrackerProps) => {
     setWeeklyConstellation,
     constellations,
     regenerate,
-  } = useConstellations()
+  } = useConstellations(serverConstellations)
 
   const todaysDate = new Date()
 

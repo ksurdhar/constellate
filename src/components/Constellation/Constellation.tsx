@@ -36,9 +36,20 @@ const Constellation: React.FC<ConstellationProps> = ({
   const [activeConnectionIndex, setActiveConnectionIndex] = useState(-1)
   const [isHovered, setIsHovered] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
+  const [hasInitialDraw, setHasInitialDraw] = useState(false)
+
   const prevNodeRef = useRef<string>(
     nodes.length > 0 ? `${nodes[0].x}-${nodes[0].y}` : 'empty'
   )
+
+  useEffect(() => {
+    // hack to prevent nextjs from complaining about SSR
+    const timer = setTimeout(() => {
+      setIsLoaded(true)
+    }, 0)
+
+    return () => clearTimeout(timer)
+  }, [])
 
   useEffect(() => {
     let timeoutId: number
@@ -47,7 +58,8 @@ const Constellation: React.FC<ConstellationProps> = ({
     const prevNodeSignature = prevNodeRef.current
     prevNodeRef.current =
       nodes.length > 0 ? `${nodes[0].x}-${nodes[0].y}` : 'empty'
-    const isNewConstellation = prevNodeSignature !== prevNodeRef.current
+    const isNewConstellation =
+      prevNodeSignature !== prevNodeRef.current || !hasInitialDraw
 
     let startIndex = isNewConstellation ? 0 : Math.max(0, completedHabits)
 
@@ -70,25 +82,18 @@ const Constellation: React.FC<ConstellationProps> = ({
         if (continueCondition) {
           const delay = isNewConstellation ? 300 : 0 // only incrementally draw if new constellation
           timeoutId = window.setTimeout(updateIndicies, delay)
+        } else {
+          setHasInitialDraw(true)
         }
       }
     }
 
-    updateIndicies()
+    timeoutId = window.setTimeout(updateIndicies, 0)
 
     return () => {
       if (timeoutId) clearTimeout(timeoutId)
     }
-  }, [completedHabits, nodes])
-
-  useEffect(() => {
-    // hack to prevent nextjs from complaining about SSR
-    const timer = setTimeout(() => {
-      setIsLoaded(true)
-    }, 0)
-
-    return () => clearTimeout(timer)
-  }, [])
+  }, [completedHabits, nodes, hasInitialDraw])
 
   if (!isLoaded) {
     return null

@@ -1,5 +1,5 @@
 import Tracker from '@/components/Tracker'
-import { Entries, Habit } from '@/types'
+import { Constellations, Entries, Habit } from '@/types'
 import { createClient } from '@/utilities/supabase/server'
 
 import { auth } from '@clerk/nextjs'
@@ -8,9 +8,11 @@ const Home = async () => {
   const { userId } = auth()
   let serverHabits: Habit[] | undefined
   let serverEntries: Entries = {}
+  let serverConstellations: Constellations = {}
 
   if (userId) {
     const supabase = createClient()
+
     const { data: habits } = await supabase
       .from('habits')
       .select()
@@ -22,18 +24,37 @@ const Home = async () => {
       .select()
       .eq('user_id', userId)
 
-    console.log('supabase entries', entries)
     if (entries) {
       entries.forEach((entry) => {
         serverEntries[entry.day_key] = {
           completedHabitIds: entry.completed_habits,
         }
       })
-      console.log('serverEntries', serverEntries)
+    }
+
+    const { data: constellations } = await supabase
+      .from('constellations')
+      .select()
+      .eq('user_id', userId)
+
+    if (constellations) {
+      constellations.forEach((constellation) => {
+        serverConstellations[constellation.week_key] = {
+          nodes: constellation.nodes,
+          connections: constellation.connections,
+          id: constellation.id,
+        }
+      })
     }
   }
 
-  return <Tracker serverHabits={serverHabits} serverEntries={serverEntries} />
+  return (
+    <Tracker
+      serverHabits={serverHabits}
+      serverEntries={serverEntries}
+      serverConstellations={serverConstellations}
+    />
+  )
 }
 
 export default Home
