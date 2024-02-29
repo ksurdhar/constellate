@@ -13,7 +13,7 @@ import { Constellations, Entries, Entry, Habit } from '@/types'
 import {
   getCompletedHabitsForWeek,
   getWeekKey,
-  getWeeklyEntries,
+  getWeeklyProgress,
 } from '@/utilities/dateUtils'
 import { SignOutButton, SignedIn, SignedOut } from '@clerk/nextjs'
 import Link from 'next/link'
@@ -60,6 +60,7 @@ const Tracker = ({
     usePanelTransitions(view)
 
   const completedWeeklyHabits = getCompletedHabitsForWeek(entries, selectedDate)
+  const weeklyProgress = getWeeklyProgress(habits, completedWeeklyHabits)
 
   return (
     <>
@@ -121,26 +122,6 @@ const Tracker = ({
                       selectedDate || new Date(),
                       habitCount - frequency
                     )
-                    const weeklyEntries = getWeeklyEntries(
-                      entries,
-                      selectedDate || new Date()
-                    )
-                    const updatedEntries = { ...weeklyEntries }
-                    Object.keys(weeklyEntries).forEach((key) => {
-                      updatedEntries[key] = {
-                        ...updatedEntries[key],
-                        completedHabitIds: updatedEntries[
-                          key
-                        ].completedHabitIds.filter((id) =>
-                          habits.some((habit) => habit.id === id)
-                        ),
-                      }
-                    })
-                    setEntries(updatedEntries)
-                    localStorage.setItem(
-                      'entries',
-                      JSON.stringify(updatedEntries)
-                    )
                   }}
                 />
               </animated.div>
@@ -176,7 +157,7 @@ const Tracker = ({
               )}
               width={550}
               height={400}
-              completedHabits={completedWeeklyHabits.length}
+              weeklyProgress={weeklyProgress}
               regenerate={() =>
                 regenerate(selectedDate || new Date(), habitCount)
               }

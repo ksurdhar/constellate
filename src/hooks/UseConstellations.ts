@@ -87,7 +87,6 @@ export const useConstellations = (serverConstellations: Constellations) => {
       // handle error case by undoing optimistic update
       if (error) console.log('supabase error', error)
       if (!data) return
-      console.log('constellation data', data)
       const updatedConstellations = {
         ...constellations,
         [weekKey]: { nodes, connections, id: data[0].id },

@@ -16,7 +16,7 @@ interface ConstellationProps {
   width: number
   height: number
   view: 'HABITS' | 'DAILY'
-  completedHabits: number
+  weeklyProgress: number
   toggleView: () => void
   regenerate: () => void
 }
@@ -27,7 +27,7 @@ const Constellation: React.FC<ConstellationProps> = ({
   nodeCount,
   width,
   height,
-  completedHabits,
+  weeklyProgress,
   toggleView,
   view,
   regenerate,
@@ -60,22 +60,22 @@ const Constellation: React.FC<ConstellationProps> = ({
     const isNewConstellation =
       prevNodeSignature !== prevNodeRef.current || !hasInitialDraw
 
-    let startIndex = isNewConstellation ? 0 : Math.max(0, completedHabits)
+    let startIndex = isNewConstellation ? 0 : Math.max(0, weeklyProgress)
 
     const updateIndicies = () => {
       if (
-        (isNewConstellation && startIndex <= completedHabits) ||
-        (!isNewConstellation && startIndex !== completedHabits - 1)
+        (isNewConstellation && startIndex <= weeklyProgress) ||
+        (!isNewConstellation && startIndex !== weeklyProgress - 1)
       ) {
         setActiveNodeIndex(startIndex)
 
         const stepSize =
-          isNewConstellation || startIndex < completedHabits ? 1 : -1
+          isNewConstellation || startIndex < weeklyProgress ? 1 : -1
         startIndex += stepSize
 
         const continueCondition = isNewConstellation
-          ? startIndex <= completedHabits
-          : startIndex !== completedHabits
+          ? startIndex <= weeklyProgress
+          : startIndex !== weeklyProgress
 
         if (continueCondition) {
           const delay = isNewConstellation ? 300 : 0 // only incrementally draw if new constellation
@@ -91,7 +91,7 @@ const Constellation: React.FC<ConstellationProps> = ({
     return () => {
       if (timeoutId) clearTimeout(timeoutId)
     }
-  }, [completedHabits, nodes, hasInitialDraw])
+  }, [weeklyProgress, nodes, hasInitialDraw])
 
   if (!isLoaded) {
     return null

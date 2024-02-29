@@ -6,19 +6,19 @@ interface CheckboxProps {
   habit: Habit
   onToggle: (habit: Habit) => void
   checked: boolean
-  disabled: boolean
+  disabled?: boolean
 }
 
 const HabitCheckbox = ({
   habit,
   onToggle,
   checked = false,
-  disabled,
+  disabled = false,
 }: CheckboxProps) => {
   return (
     <div className="checkbox-wrapper">
       <input
-        disabled={disabled && !checked}
+        disabled={disabled}
         className="inp-cbx"
         id={habit.name}
         type="checkbox"

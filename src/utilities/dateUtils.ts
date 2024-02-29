@@ -1,4 +1,4 @@
-import { Entries } from '@/types'
+import { Entries, Habit } from '@/types'
 import { format, isSameWeek, startOfWeek } from 'date-fns'
 
 export const getDayKey = (date: Date) => {
@@ -33,4 +33,15 @@ export const getCompletedHabitsForWeek = (
       const entry = entries[key]
       return acc.concat(entry.completedHabitIds)
     }, [])
+}
+
+export const getWeeklyProgress = (
+  trackedHabits: Habit[],
+  weeklyHabitIds: string[]
+) => {
+  return trackedHabits.reduce((acc, habit) => {
+    const completedCount = weeklyHabitIds.filter((id) => id === habit.id).length
+    const countOrMax = Math.min(completedCount, habit.frequency)
+    return acc + countOrMax
+  }, 0)
 }
