@@ -33,11 +33,9 @@ const Constellation: React.FC<ConstellationProps> = ({
   regenerate,
 }) => {
   const [activeNodeIndex, setActiveNodeIndex] = useState(0)
-  const [activeConnectionIndex, setActiveConnectionIndex] = useState(-1)
   const [isHovered, setIsHovered] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
   const [hasInitialDraw, setHasInitialDraw] = useState(false)
-  const [animationInProgress, setAnimationInProgress] = useState(false)
 
   const prevNodeRef = useRef<string>(
     nodes.length > 0 ? `${nodes[0].x}-${nodes[0].y}` : 'empty'
@@ -54,7 +52,6 @@ const Constellation: React.FC<ConstellationProps> = ({
 
   useEffect(() => {
     let timeoutId: number
-    if (animationInProgress) return
 
     // Update the node signature to detect constellation changes
     const prevNodeSignature = prevNodeRef.current
@@ -71,7 +68,6 @@ const Constellation: React.FC<ConstellationProps> = ({
         (!isNewConstellation && startIndex !== completedHabits - 1)
       ) {
         setActiveNodeIndex(startIndex)
-        setActiveConnectionIndex(startIndex - 2)
 
         const stepSize =
           isNewConstellation || startIndex < completedHabits ? 1 : -1
@@ -86,18 +82,16 @@ const Constellation: React.FC<ConstellationProps> = ({
           timeoutId = window.setTimeout(updateIndicies, delay)
         } else {
           setHasInitialDraw(true)
-          setAnimationInProgress(false)
         }
       }
     }
 
-    updateIndicies()
+    timeoutId = window.setTimeout(updateIndicies, 0)
 
     return () => {
       if (timeoutId) clearTimeout(timeoutId)
-      setAnimationInProgress(false)
     }
-  }, [completedHabits, nodes, hasInitialDraw, animationInProgress])
+  }, [completedHabits, nodes, hasInitialDraw])
 
   if (!isLoaded) {
     return null
@@ -146,7 +140,7 @@ const Constellation: React.FC<ConstellationProps> = ({
                 y1={sourceNode.y}
                 x2={targetNode.x}
                 y2={targetNode.y}
-                isActive={idx <= activeConnectionIndex}
+                isActive={nodes.indexOf(targetNode) <= activeNodeIndex - 1}
               />
             </React.Fragment>
           )
