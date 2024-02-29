@@ -17,7 +17,7 @@ const AddHabit = ({ addHabit }: AddHabitProps) => {
         addHabit(name, frequency)
         setName('')
       }}
-      className="flex gap-2"
+      className="flex gap-2 items-end"
     >
       <div className="flex flex-col">
         <label

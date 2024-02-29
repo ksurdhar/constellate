@@ -94,7 +94,12 @@ const Constellation: React.FC<ConstellationProps> = ({
   }, [weeklyProgress, nodes, hasInitialDraw])
 
   if (!isLoaded) {
-    return null
+    return (
+      <div
+        style={{ height, width }}
+        className="self-center text-center flex justify-around flex-col text-zinc-500"
+      ></div>
+    )
   }
 
   if (nodeCount === 0) {

@@ -69,5 +69,5 @@ export const useEntries = (serverEntries: Entries, selectedDate: Date) => {
     }
   }
 
-  return { entries, setEntries, dailyEntry, updateEntry }
+  return { entries, dailyEntry, updateEntry }
 }
