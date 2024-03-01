@@ -28,7 +28,7 @@ const WeeklyHabits = ({
   }
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-zinc-700">
+    <div className="overflow-x-auto rounded-lg border border-zinc-700 min-w-[414px]">
       <table className="border-collapse w-full select-auto text-left text-zinc-400">
         <thead className="pb-2 text-xs [&>tr]:border-b [&>tr]:border-zinc-700 [&>tr]:bg-transparent [&>tr]:hover:bg-transparent ">
           <tr className="[&.selected]:bg-gray-100 [&.inserting]:bg-transparent hover:bg-gray-100">
