@@ -8,6 +8,7 @@ import WeeklyHabits from '@/components/WeeklyHabits'
 import { useConstellations } from '@/hooks/UseConstellations'
 import { useEntries } from '@/hooks/UseEntries'
 import { useHabits } from '@/hooks/UseHabits'
+import { useWindowSize } from '@/hooks/UseWindowSize'
 import { Constellations, Entries, Entry, Habit } from '@/types'
 import {
   getCompletedHabitsForWeek,
@@ -54,6 +55,8 @@ const Tracker = ({
   )
 
   const [view, setView] = useState<'HABITS' | 'DAILY'>('DAILY')
+  const { windowWidth } = useWindowSize()
+  const smallerThan1024 = windowWidth && windowWidth < 1024
 
   const completedWeeklyHabits = getCompletedHabitsForWeek(entries, selectedDate)
   const weeklyProgress = getWeeklyProgress(habits, completedWeeklyHabits)
@@ -93,15 +96,22 @@ const Tracker = ({
           </div>
         </SignedOut>
       </nav>
-      <div className="flex min-h-screen flex-col items-center justify-center py-5 text-lg">
+      <div
+        className={`flex min-h-screen flex-col items-center justify-center py-5 text-lg ${
+          smallerThan1024 ? 'pb-[20vh]' : ''
+        }`}
+      >
         <LayoutGroup>
           <AnimatePresence initial={false} mode="wait">
-            <motion.div className="w-full flex justify-center">
-              {view === 'HABITS' && (
+            <motion.div
+              className={`w-full flex justify-center gap-4 ${
+                smallerThan1024 ? 'flex-col items-center' : ''
+              }`}
+            >
+              {view === 'HABITS' && !smallerThan1024 && (
                 <motion.div
                   initial={{ opacity: 0, x: -300 }}
                   animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -300 }}
                   transition={{ ease: 'easeInOut', duration: 0.7 }}
                   className="gap-4 flex flex-col self-center"
                 >
@@ -127,11 +137,10 @@ const Tracker = ({
                 </motion.div>
               )}
 
-              {view === 'DAILY' && (
+              {view === 'DAILY' && !smallerThan1024 && (
                 <motion.button
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
                   title="Go to Habits"
                   onClick={() => setView('HABITS')}
                   className="text-zinc-700 rounded-md hover:bg-zinc-400/15  hover:text-zinc-400 duration-300 transition-colors py-1 px-2 flex gap-1 align-middle self-center text-4xl"
@@ -164,11 +173,39 @@ const Tracker = ({
                 />
               </motion.div>
 
-              {view === 'HABITS' && (
+              {view === 'HABITS' && smallerThan1024 && (
+                <motion.div
+                  initial={{ opacity: 0, x: -300 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ ease: 'easeInOut', duration: 0.7 }}
+                  className="gap-4 flex flex-col self-center"
+                >
+                  <AddHabit
+                    addHabit={(name, frequency) => {
+                      addHabit(name, frequency)
+                      regenerate(
+                        selectedDate || new Date(),
+                        habitCount + parseInt(frequency)
+                      )
+                    }}
+                  />
+                  <HabitTable
+                    habits={habits}
+                    handleDelete={(id, frequency) => {
+                      deleteHabit(id)
+                      regenerate(
+                        selectedDate || new Date(),
+                        habitCount - frequency
+                      )
+                    }}
+                  />
+                </motion.div>
+              )}
+
+              {view === 'HABITS' && !smallerThan1024 && (
                 <motion.button
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
                   transition={{ ease: 'easeInOut', duration: 0.7 }}
                   onClick={() => setView('DAILY')}
                   title="Go to Tracker"
@@ -181,7 +218,6 @@ const Tracker = ({
                 <motion.div
                   initial={{ opacity: 0, x: 300 }}
                   animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 300 }}
                   transition={{ ease: 'easeInOut', duration: 0.7 }}
                   className="cal flex flex-col gap-4 justify-center"
                 >
