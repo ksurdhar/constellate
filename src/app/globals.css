@@ -152,11 +152,7 @@ body {
   background-image: linear-gradient(
     -225deg,
     #facc15 0%,
-    #ea580c 16%,
-    #7c3aed 32%,
-    #3b82f6 50%,
-    #7c3aed 66%,
-    #ea580c 82%,
+    #ea580c 50%,
     #facc15 100%
   );
   background-size: auto auto;
@@ -166,7 +162,7 @@ body {
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: textclip 7s linear infinite;
+  animation: textclip 6s linear infinite;
   display: inline-block;
 }
 
