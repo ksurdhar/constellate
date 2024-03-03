@@ -1,5 +1,5 @@
 # Constellate
-A minimal habit tracking application that forms constellations as you complete your goals. Check it out at [constellate-app.com](https://constellate-app.com)
+Minimal habit tracking app that forms constellations as you progress. Try it at [constellate-app.com](https://constellate-app.com)
 
 ![Screenshot 2024-03-03 at 2 54 43 PM](https://github.com/ksurdhar/constellate/assets/5005528/98bd3373-5c9f-468e-b4db-ab4cabdd4b69)
 
