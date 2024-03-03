@@ -12,8 +12,8 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'Constellate Habit Tracker',
-  description: 'Habit tracking for humans',
+  title: 'Constellate - Habit Tracking',
+  description: 'Simple habit tracking for all',
 }
 
 export default function RootLayout({

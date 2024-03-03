@@ -60,6 +60,12 @@ const Tracker = ({
 
   return (
     <>
+      <Link
+        href="/"
+        className="absolute m-5 text-xl font-semibold left-0 text-zinc-500 cursor-pointer transition-colors hover:text-zinc-200"
+      >
+        C✩
+      </Link>
       <nav className="flex flex-col gap-3 m-6 absolute right-0 text-sm font-semibold  text-zinc-500 ">
         <div
           onClick={() => setView('DAILY')}
@@ -213,6 +219,9 @@ const Tracker = ({
             </div>
           </AnimatePresence>
         </LayoutGroup>
+      </div>
+      <div className="absolute bottom-5 left-[calc(50%_-_97px)] text-zinc-600 hover:text-zinc-200 cursor-pointer transition-colors">
+        <a href="https://github.com/ksurdhar">Made with ♡ by ksurdhar</a>
       </div>
     </>
   )
